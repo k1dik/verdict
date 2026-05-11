@@ -1,0 +1,2692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Verdict</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0a0a0a;--bg2:#111;--bg3:#171717;
+  --l1:#1c1c1c;--l2:#242424;--l3:#2e2e2e;
+  --r:#e8192c;--r2:#ff3347;--rd:rgba(232,25,44,.12);--rm:rgba(232,25,44,.25);
+  --g:#00d97e;--gd:rgba(0,217,126,.1);--gm:rgba(0,217,126,.25);
+  --y:#f5c518;--yd:rgba(245,197,24,.1);--ym:rgba(245,197,24,.25);
+  --t0:#fff;--t1:#e8e8e8;--t2:#8a8a8a;--t3:#3a3a3a;--t4:#222;
+  --rim:rgba(255,255,255,.07);--rim2:rgba(255,255,255,.12);--rim3:rgba(255,255,255,.2);
+  --sans:'Space Grotesk',system-ui,sans-serif;
+  --mono:'Space Mono',monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+  --nav-h:calc(64px + var(--safe-bot));
+}
+
+html,body{height:100%;background:#000;overflow:hidden;font-family:var(--sans);-webkit-font-smoothing:antialiased;color:var(--t0);-webkit-tap-highlight-color:transparent;user-select:none;touch-action:pan-y}
+
+/* ── APP ── */
+.app{position:fixed;inset:0;background:var(--bg);overflow:hidden;max-width:430px;margin:0 auto}
+
+/* ── STATUS BAR AREA ── */
+.status-bar{height:var(--safe-top);background:var(--bg);position:relative;z-index:10}
+
+/* ── SCREENS ── */
+.screen{
+  position:absolute;
+  top:0;left:0;right:0;
+  bottom:var(--nav-h);
+  overflow-y:auto;overflow-x:hidden;
+  display:none;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:none;
+}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{display:block;animation:scrIn .3s var(--ease) both}
+@keyframes scrIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ── BOTTOM NAV ── */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;
+  z-index:300;
+  height:var(--nav-h);
+  background:rgba(8,8,8,.96);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid var(--rim2);
+  display:grid;grid-template-columns:1fr 72px 1fr;
+  align-items:flex-start;
+  padding-top:8px;
+}
+.bni{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;padding:6px 0;
+  transition:opacity .12s;-webkit-tap-highlight-color:transparent;
+  min-height:48px;
+}
+.bni:active{opacity:.6}
+.bni-ico{display:flex;align-items:center;justify-content:center;width:28px;height:28px}
+.bni-lbl{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;transition:color .12s;font-family:var(--mono)}
+.bni.on .bni-ico svg,.bni.on .bni-lbl{color:var(--r)}
+.bni:not(.on) .bni-ico svg,.bni:not(.on) .bni-lbl{color:var(--t3)}
+
+/* FAB */
+.fab-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:-20px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fab{
+  width:60px;height:60px;
+  background:var(--r);
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  box-shadow:0 4px 20px rgba(232,25,44,.5);
+  transition:all .18s var(--spring);
+  animation:fab-pulse 2.8s ease infinite;
+}
+.fab:active{transform:scale(.88);background:var(--r2)}
+@keyframes fab-pulse{
+  0%,100%{box-shadow:0 4px 20px rgba(232,25,44,.5)}
+  50%{box-shadow:0 4px 32px rgba(232,25,44,.8),0 0 0 8px rgba(232,25,44,.12)}
+}
+.fab-lbl{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)}
+
+/* ── OVERLAY ── */
+.bdr{
+  position:fixed;inset:0;max-width:430px;margin:0 auto;
+  background:rgba(0,0,0,0);z-index:500;pointer-events:none;transition:background .28s;
+}
+.bdr.open{background:rgba(0,0,0,.85);pointer-events:all}
+
+/* ── SHEET ── */
+.sheet{
+  position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;
+  background:var(--bg2);border-radius:20px 20px 0 0;border-top:1px solid var(--rim2);
+  z-index:510;transform:translateY(105%);
+  transition:transform .36s var(--ease);
+  max-height:88dvh;overflow-y:auto;
+  padding-bottom:calc(24px + var(--safe-bot));
+}
+.sheet::-webkit-scrollbar{display:none}
+.sheet.open{transform:none}
+.sh-pill{width:36px;height:4px;background:var(--rim3);border-radius:2px;margin:12px auto 0}
+.sh-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px 14px;border-bottom:1px solid var(--rim);
+}
+.sh-ttl{font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--t2);font-family:var(--mono)}
+.sh-close{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--l2);border:none;color:var(--t2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .14s;-webkit-tap-highlight-color:transparent;
+}
+.sh-close:active{background:var(--l3);color:var(--t0)}
+
+/* ── MODAL ── */
+.modal{
+  position:fixed;inset:0;max-width:430px;margin:0 auto;
+  background:var(--bg);z-index:520;
+  transform:translateY(105%);transition:transform .36s var(--ease);
+  overflow-y:auto;
+  padding-bottom:calc(20px + var(--safe-bot));
+}
+.modal::-webkit-scrollbar{display:none}
+.modal.open{transform:none}
+.mo-hdr{
+  display:flex;align-items:center;gap:14px;
+  padding:calc(16px + var(--safe-top)) 16px 16px;
+  border-bottom:1px solid var(--rim);
+  position:sticky;top:0;background:var(--bg);z-index:1;
+}
+.mo-ttl{font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--t2);font-family:var(--mono)}
+.ico-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--l1);border:none;color:var(--t1);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .14s;-webkit-tap-highlight-color:transparent;
+}
+.ico-btn:active{background:var(--l2)}
+
+/* ── COMMON ── */
+.card{background:var(--bg2);border:1px solid var(--rim);border-radius:12px;overflow:hidden}
+.tap{cursor:pointer;transition:opacity .12s;-webkit-tap-highlight-color:transparent}
+.tap:active{opacity:.6}
+
+.row{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 20px;border-bottom:1px solid var(--rim);
+  -webkit-tap-highlight-color:transparent;min-height:60px;
+}
+.row:last-child{border-bottom:none}
+.row.tappable{cursor:pointer;transition:background .1s}
+.row.tappable:active{background:var(--l1)}
+
+.btn{
+  width:100%;min-height:52px;padding:0 24px;border:none;
+  font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  cursor:pointer;font-family:var(--sans);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all .16s var(--ease);-webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--r);color:#fff}
+.btn-p:active{background:var(--r2)}
+.btn-g{background:var(--l1);color:var(--t1);border:1px solid var(--rim2)}
+.btn-g:active{background:var(--l2)}
+.btn-gr{background:var(--g);color:#000}
+.btn-trust{background:var(--gd);color:var(--g);border:1.5px solid var(--gm)}
+.btn-take{background:var(--rd);color:var(--r);border:1.5px solid var(--rm)}
+
+.tag{
+  display:inline-flex;align-items:center;gap:3px;
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.08em;padding:4px 8px;border-radius:4px;
+}
+.t-r{background:var(--rd);color:var(--r);border:1px solid var(--rm)}
+.t-g{background:var(--gd);color:var(--g);border:1px solid var(--gm)}
+.t-y{background:var(--yd);color:var(--y);border:1px solid var(--ym)}
+.t-m{background:rgba(255,255,255,.06);color:var(--t2);border:1px solid var(--rim2)}
+
+.lbl{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--t3)}
+
+.chip{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  padding:10px 18px;min-height:44px;
+  border:1.5px solid var(--rim2);background:transparent;color:var(--t2);
+  border-radius:8px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.chip:active{transform:scale(.92)}
+.chip.sel{border-color:var(--r);background:var(--rd);color:var(--r)}
+
+/* inputs */
+.input{
+  width:100%;padding:16px 18px;
+  background:var(--l1);border:1.5px solid var(--rim2);border-radius:10px;
+  font-size:16px;font-family:var(--sans);color:var(--t0);
+  outline:none;transition:border-color .18s;-webkit-appearance:none;
+}
+.input::placeholder{color:var(--t3)}
+.input:focus{border-color:var(--r)}
+.input.err{border-color:var(--r)}
+
+/* ── REPUTATION BAR ── */
+.rep-bar-wrap{display:flex;flex-direction:column;gap:5px}
+.rep-bar-track{
+  height:6px;background:var(--l3);border-radius:3px;overflow:hidden;
+  position:relative;
+}
+.rep-bar-fill{
+  height:100%;border-radius:3px;
+  transition:width .7s var(--ease);
+}
+.rep-label{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+
+/* ── STRATEGY BADGE ── */
+.strat-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;
+  padding:5px 10px;border-radius:6px;
+}
+
+/* ── OPP HISTORY DOTS ── */
+.hist-dots{display:flex;gap:4px;flex-wrap:wrap}
+.hdot{
+  width:10px;height:10px;border-radius:3px;flex-shrink:0;
+  transition:transform .15s var(--spring);
+}
+.hdot:active{transform:scale(1.4)}
+
+/* ── MATCHED CARD (wait screen) ── */
+.matched-opp-card{
+  width:100%;background:var(--l1);border:1px solid var(--rim2);
+  border-radius:14px;padding:18px 20px;text-align:left;margin-bottom:12px;
+}
+.matched-opp-card.trust-heavy{border-color:var(--gm);background:rgba(0,217,126,.04)}
+.matched-opp-card.take-heavy{border-color:var(--rm);background:rgba(232,25,44,.04)}
+.matched-opp-card.balanced{border-color:var(--ym);background:rgba(245,197,24,.04)}
+
+/* ── NR-OPP MINI CARD ── */
+.nr-opp-card{
+  border-bottom:1px solid var(--rim);
+  padding:0;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .1s;
+}
+.nr-opp-card:active{background:var(--l1)}
+
+/* choice cards */
+.choice-card{
+  width:100%;padding:28px 24px;
+  border:1.5px solid;background:transparent;border-radius:14px;
+  cursor:pointer;text-align:left;font-family:var(--sans);
+  transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
+}
+.choice-card:active{transform:scale(.97)}
+.cc-trust{border-color:rgba(0,217,126,.2)}
+.cc-trust:active{border-color:var(--g);background:var(--gd)}
+.cc-take{border-color:rgba(232,25,44,.2)}
+.cc-take:active{border-color:var(--r);background:var(--rd)}
+
+/* step dots */
+.step-dot{width:6px;height:6px;border-radius:3px;background:var(--t4);transition:all .3s var(--ease)}
+.step-dot.on{background:var(--r);width:22px}
+.step-dot.done{background:var(--g)}
+.pwd-eye{position:absolute;right:16px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--t3);padding:4px}
+
+/* auth input */
+.auth-step{display:none}.auth-step.active{display:block;animation:scrIn .26s var(--ease) both}
+
+/* ── SPLASH ── */
+#S-splash{
+  position:fixed;inset:0;max-width:430px;margin:0 auto;
+  background:var(--bg);z-index:700;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(40px + var(--safe-top)) 32px calc(40px + var(--safe-bot));overflow:hidden;
+}
+#S-splash.out{animation:splashOut .5s var(--ease) both}
+@keyframes splashOut{to{opacity:0;transform:scale(.93)}}
+
+.sp-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--rim) 1px,transparent 1px),linear-gradient(90deg,var(--rim) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(ellipse 75% 60% at 50% 50%,black 20%,transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 75% 60% at 50% 50%,black 20%,transparent 100%);
+}
+.sp-glow{
+  position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);
+  width:360px;height:360px;
+  background:radial-gradient(circle,rgba(232,25,44,.16) 0%,transparent 68%);
+  pointer-events:none;animation:glow 4s ease-in-out infinite;
+}
+@keyframes glow{0%,100%{opacity:.7;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%{opacity:0;transform:scale(.6) translateY(18px)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes glitch{0%,88%,100%{transform:none;text-shadow:none}89%{transform:translate(-2px,0);text-shadow:3px 0 var(--r),-3px 0 var(--g)}91%{transform:translate(2px,0);text-shadow:-3px 0 var(--r),3px 0 var(--g)}93%{transform:none;text-shadow:none}}
+@keyframes mmPulse{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}
+
+/* ── AUTH SCREEN ── */
+#S-auth{
+  position:fixed;inset:0;max-width:430px;margin:0 auto;
+  background:var(--bg);z-index:600;overflow-y:auto;display:none;
+  padding-top:var(--safe-top);padding-bottom:calc(32px + var(--safe-bot));
+}
+#S-auth::-webkit-scrollbar{display:none}
+
+/* section header for screens */
+.scr-hdr{
+  display:flex;align-items:center;gap:14px;
+  padding:calc(14px + var(--safe-top)) 16px 14px;
+  border-bottom:1px solid var(--rim);
+  position:sticky;top:0;background:var(--bg);z-index:5;
+}
+.scr-title{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.scr-sub{font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:2px;letter-spacing:.08em;text-transform:uppercase}
+
+/* section divider */
+.sec-hdr{
+  padding:20px 20px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sec-ttl{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)}
+.sec-action{font-size:11px;font-weight:700;color:var(--r);cursor:pointer;font-family:var(--mono);letter-spacing:.08em}
+
+/* hero balance */
+.bal-hero{
+  background:var(--bg);padding:28px 20px 0;
+  cursor:pointer;position:relative;overflow:hidden;
+}
+.bal-num{
+  font-size:64px;font-weight:700;letter-spacing:-.06em;
+  line-height:.92;font-family:var(--mono);
+}
+.bal-actions{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;margin-top:24px;
+  border-top:1px solid var(--rim);border-bottom:1px solid var(--rim);
+}
+.bal-act{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:16px 8px;cursor:pointer;transition:background .1s;
+  -webkit-tap-highlight-color:transparent;
+}
+.bal-act:not(:last-child){border-right:1px solid var(--rim)}
+.bal-act:active{background:var(--l1)}
+.bal-act-ico{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--l1);display:flex;align-items:center;justify-content:center;
+  transition:background .1s;
+}
+.bal-act:active .bal-act-ico{background:var(--l2)}
+.bal-act-lbl{font-size:10px;font-weight:600;color:var(--t2);letter-spacing:.06em}
+
+/* stat pair */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--rim)}
+.stat-cell{padding:20px;position:relative}
+.stat-cell:first-child{border-right:1px solid var(--rim)}
+.stat-num{font-size:38px;font-weight:700;letter-spacing:-.05em;line-height:1;font-family:var(--mono)}
+.stat-bar{height:2px;background:var(--l2);margin-top:10px;border-radius:1px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:1px;transition:width 1s var(--ease)}
+
+/* round item */
+.round-item{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 20px;border-bottom:1px solid var(--rim);
+  cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent;
+}
+.round-item:active{background:var(--l1)}
+.round-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
+/* profile avatar */
+.pf-av{
+  width:72px;height:72px;border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:700;font-family:var(--mono);flex-shrink:0;
+  background:var(--rd);border:2px solid var(--rm);color:var(--r);
+}
+
+/* menu row */
+.menu-row{
+  display:flex;align-items:center;gap:14px;padding:16px 20px;
+  border-bottom:1px solid var(--rim);cursor:pointer;
+  transition:background .1s;-webkit-tap-highlight-color:transparent;min-height:60px;
+}
+.menu-row:active{background:var(--l1)}
+.menu-ico{
+  width:38px;height:38px;border-radius:10px;
+  border:1px solid var(--rim2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
+/* decision card */
+.decision-card{
+  width:100%;min-height:140px;padding:24px;
+  border:1.5px solid;background:transparent;border-radius:16px;
+  cursor:pointer;text-align:left;font-family:var(--sans);
+  transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
+}
+.decision-card:active{transform:scale(.97)}
+.dc-trust{border-color:var(--gm)}
+.dc-trust:active,.dc-trust-active{background:rgba(0,217,126,.08)}
+.dc-take{border-color:var(--rm)}
+.dc-take:active,.dc-take-active{background:rgba(232,25,44,.08)}
+
+/* notification dot */
+.notif-dot{
+  position:absolute;top:8px;right:8px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--r);border:2px solid var(--bg);
+}
+
+/* demo badge */
+.demo-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(245,197,24,.15);border:1px solid var(--ym);
+  color:var(--y);font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  padding:4px 10px;border-radius:4px;
+}
+
+/* mode select screen */
+#S-mode{background:var(--bg)}
+
+/* ── LEADERBOARD ── */
+.lb-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 20px;border-bottom:1px solid var(--rim);
+  transition:background .1s;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.lb-row:last-child{border-bottom:none}
+.lb-row:active{background:var(--l1)}
+.lb-rank{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  width:24px;text-align:center;flex-shrink:0;color:var(--t3);
+}
+.lb-rank.gold{color:var(--y)}
+.lb-rank.silver{color:#aaa}
+.lb-rank.bronze{color:#cd7f32}
+.lb-av{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;font-family:var(--mono);
+  flex-shrink:0;background:var(--l2);border:1px solid var(--rim2);color:var(--t2);
+}
+.lb-av.me{background:var(--rd);border-color:var(--rm);color:var(--r)}
+.lb-name{font-size:14px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-score{font-family:var(--mono);font-size:13px;font-weight:700;flex-shrink:0}
+
+/* ── SHARE CARD ── */
+.share-card-wrap{
+  position:fixed;inset:0;max-width:430px;margin:0 auto;
+  background:rgba(0,0,0,.92);z-index:600;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  animation:scrIn .25s var(--ease) both;
+}
+.share-card{
+  width:100%;background:var(--bg2);border:1px solid var(--rim2);
+  border-radius:20px;overflow:hidden;
+}
+.challenge-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px;min-height:44px;
+  background:var(--rd);border:1.5px solid var(--rm);
+  color:var(--r);border-radius:10px;cursor:pointer;
+  font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  font-family:var(--sans);transition:all .15s;-webkit-tap-highlight-color:transparent;
+  white-space:nowrap;
+}
+.challenge-btn:active{background:var(--rm)}
+.mode-card{
+  width:100%;padding:28px 24px;
+  border:1.5px solid;background:transparent;border-radius:16px;
+  cursor:pointer;text-align:left;font-family:var(--sans);
+  transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
+}
+.mode-card:active{transform:scale(.97)}
+.mc-demo{border-color:var(--ym);background:var(--yd)}
+.mc-real{border-color:var(--rim2)}
+.mc-real:active{border-color:var(--rim3);background:var(--l1)}
+
+</style>
+</head>
+<body>
+
+<div class="app" id="APP">
+
+<!-- ═══ SPLASH ═══ -->
+<div id="S-splash">
+  <div class="sp-grid"></div>
+  <div class="sp-glow"></div>
+
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%">
+    <div style="font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--r);border:1px solid var(--rm);padding:5px 14px;border-radius:4px;margin-bottom:36px;background:var(--rd);animation:fadeUp .5s .1s var(--ease) both">Trust Game · Demo</div>
+
+    <div style="font-size:88px;font-weight:700;letter-spacing:-.06em;line-height:.88;text-align:center;margin-bottom:18px;animation:glitch 8s ease infinite, fadeUp .5s .18s var(--ease) both">VERDICT</div>
+
+    <div style="font-family:var(--mono);font-size:12px;color:var(--t2);letter-spacing:.12em;text-transform:uppercase;text-align:center;line-height:1.8;margin-bottom:48px;animation:fadeUp .5s .28s var(--ease) both">Two players.&nbsp; One choice.&nbsp; Prisoner's Dilemma.</div>
+
+    <div style="display:flex;gap:32px;margin-bottom:56px;animation:fadeUp .5s .38s var(--ease) both">
+      <div style="text-align:center">
+        <div style="font-family:var(--mono);font-size:22px;font-weight:700" id="sp-global">—</div>
+        <div class="lbl" style="margin-top:4px">Decisions today</div>
+      </div>
+      <div style="width:1px;background:var(--rim2)"></div>
+      <div style="text-align:center">
+        <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--g)" id="sp-trust">—</div>
+        <div class="lbl" style="margin-top:4px">Trust rate</div>
+      </div>
+      <div style="width:1px;background:var(--rim2)"></div>
+      <div style="text-align:center">
+        <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--y)" id="sp-volume">—</div>
+        <div class="lbl" style="margin-top:4px">Volume</div>
+      </div>
+    </div>
+
+    <div style="width:100%;display:flex;flex-direction:column;gap:10px;animation:fadeUp .5s .48s var(--ease) both">
+      <button onclick="splashGoAuth('reg')" style="width:100%;min-height:56px;background:var(--r);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;letter-spacing:.04em;cursor:pointer;font-family:var(--sans);transition:all .18s;-webkit-tap-highlight-color:transparent" onactive="this.style.background='var(--r2)'">Create Account</button>
+      <button onclick="splashGoAuth('login')" style="width:100%;min-height:52px;background:transparent;color:var(--t1);border:1.5px solid var(--rim2);border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .16s;-webkit-tap-highlight-color:transparent">Sign In</button>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:calc(20px + var(--safe-bot));font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.1em;text-align:center;animation:fadeUp .5s .6s var(--ease) both">Demo mode · Game theory · Prisoner's dilemma</div>
+</div>
+
+<!-- ═══ AUTH ═══ -->
+<div id="S-auth">
+  <!-- Header -->
+  <div style="padding:calc(20px + var(--safe-top)) 20px 0;display:flex;align-items:center;justify-content:space-between">
+    <button onclick="goSplash()" class="ico-btn"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div style="font-size:15px;font-weight:700;letter-spacing:-.01em;animation:glitch 8s ease infinite">VERDICT</div>
+    <button id="auth-toggle-btn" onclick="authToggle()" style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--r);background:var(--rd);border:1px solid var(--rm);padding:8px 16px;border-radius:8px;cursor:pointer;font-family:var(--sans)">Sign In</button>
+  </div>
+
+  <!-- Step dots -->
+  <div id="auth-steps-bar" style="display:flex;align-items:center;gap:6px;padding:20px 20px 0">
+    <div class="step-dot on" id="sd-1"></div>
+    <div class="step-dot" id="sd-2"></div>
+    <div class="step-dot" id="sd-3"></div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="auth-reg" style="display:block;padding:20px">
+
+    <!-- Step 1 -->
+    <div class="auth-step active" id="reg-step-1">
+      <div style="margin-bottom:28px">
+        <div class="lbl" style="margin-bottom:10px">Step 01 / 03</div>
+        <h1 style="font-size:30px;font-weight:700;letter-spacing:-.04em;line-height:1.1;margin-bottom:10px">Create<br>your account</h1>
+        <p style="font-size:14px;color:var(--t2);line-height:1.6">Two players. One choice.<br>The classic trust dilemma.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="lbl">Your nickname</div>
+            <button onclick="rerollNick()" type="button" style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--r);background:var(--rd);border:1px solid var(--rm);padding:5px 10px;border-radius:7px;cursor:pointer;font-family:var(--mono)">&#x21BB; Reroll</button>
+          </div>
+          <input class="input" type="text" id="reg-username" placeholder="silent_wolf342" autocomplete="off" spellcheck="false" style="font-family:var(--mono);letter-spacing:.04em">
+          <div style="font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:6px">Generated for you — edit if you want</div>
+          <div id="reg-username-err" style="display:none;font-size:11px;color:var(--r);margin-top:6px;font-family:var(--mono)"></div>
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:8px">Email</div>
+          <input class="input" type="email" id="reg-email" placeholder="you@example.com" autocomplete="email">
+          <div id="reg-email-err" style="display:none;font-size:11px;color:var(--r);margin-top:6px;font-family:var(--mono)"></div>
+        </div>
+      </div>
+      <button class="btn btn-p" onclick="regNext1()">Continue →</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="auth-step" id="reg-step-2">
+      <div style="margin-bottom:28px">
+        <div class="lbl" style="margin-bottom:10px">Step 02 / 03</div>
+        <h1 style="font-size:30px;font-weight:700;letter-spacing:-.04em;line-height:1.1">Set your<br>password</h1>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+        <div>
+          <div class="lbl" style="margin-bottom:8px">Password</div>
+          <div style="position:relative">
+            <input class="input" type="password" id="reg-pwd" placeholder="min 8 characters" autocomplete="new-password">
+            <span class="pwd-eye" onclick="togglePwd('reg-pwd',this)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="9" cy="9" rx="7" ry="5"/><circle cx="9" cy="9" r="2"/></svg></span>
+          </div>
+          <div style="height:3px;background:var(--l2);margin-top:10px;border-radius:2px;overflow:hidden"><div id="pwd-strength-bar" style="height:100%;width:0%;background:var(--r);transition:all .3s;border-radius:2px"></div></div>
+          <div style="margin-top:5px;display:flex;justify-content:space-between">
+            <span id="pwd-strength-lbl" style="font-size:11px;color:var(--t3);font-family:var(--mono)">Enter password</span>
+          </div>
+          <div id="reg-pwd-err" style="display:none;font-size:11px;color:var(--r);margin-top:6px;font-family:var(--mono)"></div>
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:8px">Confirm Password</div>
+          <div style="position:relative">
+            <input class="input" type="password" id="reg-pwd2" placeholder="repeat password" autocomplete="new-password">
+            <span class="pwd-eye" onclick="togglePwd('reg-pwd2',this)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="9" cy="9" rx="7" ry="5"/><circle cx="9" cy="9" r="2"/></svg></span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-g" onclick="regBack()" style="flex:0 0 52px;min-width:0;padding:0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+        <button class="btn btn-p" onclick="regNext2()" style="flex:1">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="auth-step" id="reg-step-3">
+      <div style="margin-bottom:24px">
+        <div class="lbl" style="margin-bottom:10px">Step 03 / 03</div>
+        <h1 style="font-size:30px;font-weight:700;letter-spacing:-.04em;line-height:1.1;margin-bottom:8px">Confirm &<br>agree</h1>
+      </div>
+      <!-- Preview -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:14px;padding:18px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
+        <div id="reg-av-preview" style="width:48px;height:48px;border-radius:12px;background:var(--rd);border:2px solid var(--rm);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--r);flex-shrink:0">P</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:2px" id="reg-preview-name">—</div>
+          <div style="font-size:12px;color:var(--t2);font-family:var(--mono)" id="reg-preview-email">—</div>
+        </div>
+      </div>
+      <!-- Checkboxes -->
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px">
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div id="chk-terms" data-checked="false" onclick="toggleCheck('chk-terms')" style="width:24px;height:24px;flex-shrink:0;border:1.5px solid var(--rim2);border-radius:6px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .18s"></div>
+          <div style="font-size:14px;color:var(--t2);line-height:1.6">I agree to the <span style="color:var(--t0);text-decoration:underline;cursor:pointer">Terms of Service</span> and <span style="color:var(--t0);text-decoration:underline;cursor:pointer">Privacy Policy</span></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div id="chk-age" data-checked="false" onclick="toggleCheck('chk-age')" style="width:24px;height:24px;flex-shrink:0;border:1.5px solid var(--rim2);border-radius:6px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .18s"></div>
+          <div style="font-size:14px;color:var(--t2);line-height:1.6">I confirm I am 18+ years old and understand this is a game of strategy</div>
+        </div>
+      </div>
+      <div id="reg-terms-err" style="display:none;font-size:11px;color:var(--r);margin-bottom:14px;font-family:var(--mono)">Please accept all agreements to continue</div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-g" onclick="regBack()" style="flex:0 0 52px;min-width:0;padding:0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+        <button class="btn btn-p" onclick="regSubmit()" style="flex:1">Enter Verdict →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="auth-login" style="display:none;padding:20px">
+    <div style="margin-bottom:32px">
+      <h1 style="font-size:30px;font-weight:700;letter-spacing:-.04em;line-height:1.1;margin-bottom:10px">Welcome<br>back</h1>
+      <p style="font-size:14px;color:var(--t2)">Ready to play?</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Email</div>
+        <input class="input" type="email" id="login-email" placeholder="you@example.com">
+      </div>
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Password</div>
+        <div style="position:relative">
+          <input class="input" type="password" id="login-pwd" placeholder="••••••••">
+          <span class="pwd-eye" onclick="togglePwd('login-pwd',this)"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="9" cy="9" rx="7" ry="5"/><circle cx="9" cy="9" r="2"/></svg></span>
+        </div>
+      </div>
+    </div>
+    <div id="login-err" style="display:none;font-size:11px;color:var(--r);margin-bottom:14px;font-family:var(--mono)"></div>
+    <button class="btn btn-p" onclick="doLogin()">Sign In →</button>
+    <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--t3)">Forgot password? <span style="color:var(--r);cursor:pointer">Reset</span></div>
+  </div>
+</div>
+
+<!-- ═══ MODE SELECT ═══ -->
+<div class="screen" id="S-mode">
+  <div class="scr-hdr">
+    <button class="ico-btn" onclick="goS('S-home')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div>
+      <div class="scr-title">Choose Mode</div>
+      <div class="scr-sub">How do you want to play?</div>
+    </div>
+  </div>
+  <div style="padding:24px 20px;display:flex;flex-direction:column;gap:12px">
+
+    <!-- Demo -->
+    <button onclick="startDemo()" class="mode-card mc-demo">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--y)" stroke-width="1.6"><circle cx="11" cy="8" r="4"/><path d="M4 20c0-4 3-6 7-6s7 2 7 6"/><circle cx="17" cy="8" r="3"/><path d="M20 19c0-3-2-5-5-5"/></svg>
+        <span class="demo-badge">Demo Mode</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.04em;color:var(--y);font-family:var(--mono);margin-bottom:8px">Real P2P · Demo $</div>
+      <p style="font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:14px">Play against real anonymous players using demo balance. Open in two tabs to play against yourself — or get matched with someone else.</p>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--y)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">Real opponent via P2P matchmaking</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--y)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">No real money at risk</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--y)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">Falls back to simulation if no one found</span></div>
+      </div>
+    </button>
+
+    <!-- Training -->
+    <button onclick="startTraining()" class="mode-card" style="border-color:var(--rm);background:rgba(232,25,44,.04)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="font-size:22px">🎯</span>
+        <span class="tag t-r">Training</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.04em;color:var(--r);font-family:var(--mono);margin-bottom:8px">Real $ · AI Opponent</div>
+      <p style="font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:14px">Play with real money against an adaptive AI. Sharpen your strategy before facing real opponents. Stakes capped at $2.</p>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--r)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">AI adapts to your last 10 moves</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--r)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">Real money — max $2 per round</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--r)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">Build reputation before going live</span></div>
+      </div>
+    </button>
+
+    <!-- Real money -->
+    <button onclick="startReal()" class="mode-card mc-real" style="border-color:var(--rim2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <span style="font-size:28px">⚡</span>
+        <span class="tag t-g">Active</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.04em;color:var(--t0);font-family:var(--mono);margin-bottom:8px">Real Money</div>
+      <p style="font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:14px">Play against real players with real stakes. Your outcome depends only on your decision and your opponent's — no randomness involved.</p>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--g)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">Verified peer-to-peer matchmaking</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--g)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">No bots — real opponent only</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--g)" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg><span style="font-size:12px;color:var(--t2)">Skill-based — outcome = both players' choices</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--y)" stroke-width="2"><circle cx="6" cy="6" r="4"/><path d="M6 4v2.5l1.5 1"/></svg><span style="font-size:12px;color:var(--t3)">18+ · Deposit required to play</span></div>
+      </div>
+    </button>
+
+  </div>
+  <div style="padding:16px 20px 24px;text-align:center;font-size:11px;color:var(--t3);line-height:1.8;font-family:var(--mono)">
+    Real money mode is for players 18+.<br>
+    Skill-based game · outcome determined by both players' choices · no randomness.<br>
+    <span style="color:var(--t4)">Play responsibly. Set limits. Take breaks.</span>
+  </div>
+</div>
+<div class="screen" id="S-waitlist">
+  <div class="scr-hdr">
+    <button class="ico-btn" onclick="goS('S-mode')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div>
+      <div class="scr-title">Real Money</div>
+      <div class="scr-sub">Coming soon</div>
+    </div>
+  </div>
+  <div style="padding:40px 24px;text-align:center">
+    <div style="font-size:64px;margin-bottom:24px">🔒</div>
+    <div style="font-size:26px;font-weight:700;letter-spacing:-.04em;margin-bottom:12px">In Development</div>
+    <p style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:36px;max-width:300px;margin-left:auto;margin-right:auto">Real-money play requires a licensed matchmaking backend, KYC verification, and payment escrow. We're building it right.</p>
+    <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:16px;padding:24px;margin-bottom:24px;text-align:left">
+      <div class="lbl" style="margin-bottom:14px">What's required</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);flex-shrink:0"></div><span style="font-size:13px;color:var(--t2)">Gambling license (MGA / UKGC)</span></div>
+        <div style="display:flex;align-items:center;gap:12px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);flex-shrink:0"></div><span style="font-size:13px;color:var(--t2)">Real-time peer-to-peer matchmaking server</span></div>
+        <div style="display:flex;align-items:center;gap:12px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);flex-shrink:0"></div><span style="font-size:13px;color:var(--t2)">Payment escrow & fraud detection</span></div>
+        <div style="display:flex;align-items:center;gap:12px"><div style="width:8px;height:8px;border-radius:50%;background:var(--y);flex-shrink:0"></div><span style="font-size:13px;color:var(--t2)">Full KYC / AML compliance</span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-p" onclick="joinWaitlist()">Join Waitlist →</button>
+      <button class="btn btn-g" onclick="startDemo()">Play Demo Instead</button>
+    </div>
+    <div id="wl-confirm" style="display:none;margin-top:18px;padding:14px;border-radius:10px;background:var(--gd);border:1px solid var(--gm)">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--g);font-weight:700;letter-spacing:.1em">✓ YOU'RE ON THE LIST</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:4px">We'll notify you when real-money mode launches.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div class="screen" id="S-home">
+
+  <!-- Top header with safe area -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(16px + var(--safe-top)) 20px 16px;background:var(--bg)">
+    <div>
+      <div class="lbl" style="margin-bottom:5px">VERDICT</div>
+      <div style="font-size:24px;font-weight:700;letter-spacing:-.04em" id="hm-name">Player</div>
+    </div>
+    <button onclick="openM('M-notif')" class="ico-btn" style="position:relative;background:var(--l1)">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--t1)" stroke-width="1.6"><path d="M10 2a5.5 5.5 0 00-5.5 5.5v2L2.5 14h15l-2-4.5V7.5A5.5 5.5 0 0010 2z"/><path d="M8 16a2 2 0 004 0"/></svg>
+      <div class="notif-dot"></div>
+    </button>
+  </div>
+
+  <!-- Balance hero -->
+  <div class="bal-hero tap" onclick="openM('M-balance')">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div class="lbl">Balance</div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span id="hm-mode-dot" style="width:6px;height:6px;border-radius:50%;background:var(--y);animation:blink 1.4s ease infinite;display:inline-block"></span>
+        <span id="hm-mode-lbl" style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--y);font-family:var(--mono)">Demo</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:3px">
+      <span style="font-size:20px;font-weight:700;color:var(--t3);font-family:var(--mono);margin-bottom:4px">$</span>
+      <span class="bal-num" id="hm-bal">250.00</span>
+    </div>
+    <div id="hm-change" style="margin-top:8px;min-height:20px">
+      <span class="tag t-m">No activity yet</span>
+    </div>
+    <!-- Quick actions -->
+    <div class="bal-actions">
+      <div id="hm-add-btn" class="bal-act" style="opacity:.35;pointer-events:none" onclick="event.stopPropagation();openSh('SH-deposit')">
+        <div class="bal-act-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--g)" stroke-width="1.8"><path d="M8 2v12M2 8h12"/></svg></div>
+        <span class="bal-act-lbl">Add</span>
+      </div>
+      <div id="hm-out-btn" class="bal-act" style="opacity:.35;pointer-events:none" onclick="event.stopPropagation();openSh('SH-withdraw')">
+        <div class="bal-act-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t2)" stroke-width="1.8"><path d="M8 14V2M3 9l5 5 5-5"/></svg></div>
+        <span class="bal-act-lbl">Out</span>
+      </div>
+      <div class="bal-act" onclick="event.stopPropagation();openM('M-history')">
+        <div class="bal-act-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t2)" stroke-width="1.8"><path d="M2 4h12M2 8h12M2 12h7"/></svg></div>
+        <span class="bal-act-lbl">Rounds</span>
+      </div>
+      <div class="bal-act" onclick="event.stopPropagation();openM('M-stats')">
+        <div class="bal-act-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t2)" stroke-width="1.8"><path d="M2 13l4-5 3 2.5 4.5-7"/></svg></div>
+        <span class="bal-act-lbl">Stats</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats strip -->
+  <div class="stat-grid">
+    <div class="stat-cell tap" onclick="openM('M-stats')">
+      <div class="lbl" style="margin-bottom:8px">Trust Rate</div>
+      <div class="stat-num" id="hm-tr">—</div>
+      <div class="stat-bar"><div class="stat-bar-fill" id="hm-trb" style="width:0%;background:var(--g)"></div></div>
+    </div>
+    <div class="stat-cell tap" onclick="openM('M-stats')">
+      <div class="lbl" style="margin-bottom:8px">Rounds</div>
+      <div class="stat-num" id="hm-rnd">0</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:10px;font-family:var(--mono)" id="hm-wins">0 wins</div>
+    </div>
+  </div>
+
+  <!-- Recent rounds -->
+  <div class="sec-hdr">
+    <span class="sec-ttl">Recent Rounds</span>
+    <span class="sec-action tap" onclick="openM('M-history')">All →</span>
+  </div>
+  <div id="hm-rounds">
+    <div style="padding:40px 20px;text-align:center">
+      <div style="font-size:56px;font-weight:700;color:var(--t4);font-family:var(--mono);margin-bottom:12px">0</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.6">No rounds yet.<br>Make your first decision.</div>
+
+    </div>
+  </div>
+
+  <!-- Global ticker -->
+  <div class="tap" onclick="openM('M-today')" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--rim);margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--g);display:inline-block;animation:blink 1.4s ease infinite"></span>
+      <span style="font-size:13px;color:var(--t2)">Decisions today</span>
+    </div>
+    <span style="font-family:var(--mono);font-size:14px;font-weight:700" id="hm-global">12,483</span>
+  </div>
+</div>
+
+<!-- ═══ NEW ROUND ═══ -->
+<div class="screen" id="S-new">
+  <div class="scr-hdr">
+    <button class="ico-btn" onclick="goS('S-mode')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div>
+      <div class="scr-title">New Round</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:blink 1.4s ease infinite;display:block"></span>
+        <span id="nr-mode-lbl" style="font-size:10px;color:var(--g);font-family:var(--mono);font-weight:700;letter-spacing:.1em;text-transform:uppercase">P2P · Demo Balance</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance strip -->
+  <div style="padding:16px 20px;border-bottom:1px solid var(--rim);display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div class="lbl" style="margin-bottom:5px">Demo Balance</div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.03em;font-family:var(--mono)">$<span id="nr-bal">250.00</span></div>
+    </div>
+    <span class="demo-badge">No real money</span>
+  </div>
+
+  <!-- Stake chips -->
+  <div style="padding:20px;border-bottom:1px solid var(--rim)">
+    <div class="lbl" style="margin-bottom:14px">Choose Stake</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <!-- Training режим: только $1-2, остальные скрыты -->
+      <button class="chip" id="chip-1" onclick="pickC(this,1)" style="display:none">$1</button>
+      <button class="chip" id="chip-2" onclick="pickC(this,2)" style="display:none">$2</button>
+      <button class="chip" id="chip-5" onclick="pickC(this,5)">$5</button>
+      <button class="chip" id="chip-10" onclick="pickC(this,10)">$10</button>
+      <button class="chip" id="chip-25" onclick="pickC(this,25)">$25</button>
+      <button class="chip" id="chip-50" onclick="pickC(this,50)">$50</button>
+      <button class="chip" id="chip-100" onclick="pickC(this,100)">$100</button>
+    </div>
+  </div>
+
+  <!-- Rules preview -->
+  <div class="tap" onclick="openSh('SH-rules')" style="border-bottom:1px solid var(--rim);padding:16px 20px;cursor:pointer">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span class="lbl">Round Rules</span>
+      <span style="font-size:11px;color:var(--r);font-family:var(--mono);font-weight:700">Full →</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;color:var(--t2)">Both Trust</span>
+        <span class="tag t-g">+10% each</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;color:var(--t2)">Both Take</span>
+        <span class="tag t-r">−20% each</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;color:var(--t2)">One Takes</span>
+        <span class="tag t-y">Taker wins all</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matchmaking hint -->
+  <div style="padding:16px 20px;border-bottom:1px solid var(--rim)">
+    <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--rd);border:1px solid var(--rm);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--r)" stroke-width="1.6"><circle cx="9" cy="7" r="3.5"/><path d="M3 17c0-3.8 2.7-6 6-6s6 2.2 6 6"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;margin-bottom:3px">Opponent assigned at start</div>
+        <div style="font-size:11px;color:var(--t3);font-family:var(--mono);line-height:1.5">After matching, you'll see their last 12 decisions before you choose.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-p" onclick="startRound()">Find Opponent →</button>
+    <button class="btn btn-g" onclick="openSh('SH-rules')">Read Full Rules</button>
+  </div>
+</div>
+
+<!-- ═══ DECISION ═══ -->
+<div class="screen" id="S-decision">
+  <div class="scr-hdr" style="background:var(--bg)">
+    <button class="ico-btn" onclick="goS('S-new')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div style="flex:1;text-align:center">
+      <div class="lbl" id="dc-rid">ROUND —</div>
+    </div>
+    <div style="width:40px"></div>
+  </div>
+
+  <!-- Stake hero -->
+  <div style="text-align:center;padding:36px 20px 28px;border-bottom:1px solid var(--rim)">
+    <div class="lbl" style="margin-bottom:10px">Stake</div>
+    <div style="font-size:72px;font-weight:700;letter-spacing:-.06em;line-height:.9;font-family:var(--mono);color:var(--y)" id="dc-stake">$25.00</div>
+    <div style="font-size:12px;color:var(--t3);margin-top:10px;font-family:var(--mono)" id="dc-mode-lbl">demo balance · no real money</div>
+  </div>
+
+  <!-- Opponent status -->
+  <div style="padding:12px 20px;border-bottom:1px solid var(--rim);display:flex;align-items:center;justify-content:center;gap:10px">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--g)" stroke-width="1.5"><circle cx="8" cy="6" r="3"/><path d="M2 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+    <span style="font-size:13px;color:var(--g);font-family:var(--mono);font-weight:700" id="dc-opp">Opponent matched</span>
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:blink 1.4s ease infinite;display:block"></span>
+  </div>
+
+  <!-- Choice cards -->
+  <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+    <button onclick="makeChoice('trust')" class="decision-card dc-trust">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--g);margin-bottom:8px;font-family:var(--mono)">Option A</div>
+        <div style="font-size:44px;font-weight:700;letter-spacing:-.05em;color:var(--g);line-height:1;margin-bottom:10px;font-family:var(--mono)">TRUST</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.6">Both cooperate → both +10%<br>You trust, they defect → you lose all</div>
+      </div>
+    </button>
+    <button onclick="makeChoice('take')" class="decision-card dc-take">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--r);margin-bottom:8px;font-family:var(--mono)">Option B</div>
+        <div style="font-size:44px;font-weight:700;letter-spacing:-.05em;color:var(--r);line-height:1;margin-bottom:10px;font-family:var(--mono)">TAKE</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.6">You take, they trust → you win all<br>Both defect → both −20%</div>
+      </div>
+    </button>
+  </div>
+  <div style="padding:0 20px 24px;font-size:12px;color:var(--t3);line-height:1.7;font-family:var(--mono);text-align:center">Choice is final the moment you tap.</div>
+</div>
+
+<!-- ═══ WAITING / MATCHMAKING ═══ -->
+<div class="screen" id="S-wait">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;min-height:80dvh;text-align:center">
+
+    <!-- Phase: searching -->
+    <div id="wt-phase-search" style="display:flex;flex-direction:column;align-items:center;width:100%">
+      <!-- Pulse ring -->
+      <div style="position:relative;width:80px;height:80px;margin-bottom:36px">
+        <div style="position:absolute;inset:0;border-radius:50%;background:var(--rd);animation:mmPulse 1.6s ease-out infinite"></div>
+        <div style="position:absolute;inset:8px;border-radius:50%;background:var(--rd);animation:mmPulse 1.6s .4s ease-out infinite"></div>
+        <div style="position:absolute;inset:16px;border-radius:50%;background:var(--rm);display:flex;align-items:center;justify-content:center">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--r)" stroke-width="1.8"><circle cx="11" cy="8" r="4"/><path d="M4 20c0-4 3-6 7-6s7 2 7 6"/></svg>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:700;letter-spacing:-.04em;margin-bottom:8px;font-family:var(--mono)">Finding opponent<span id="wt-dots" style="color:var(--r)"></span></div>
+      <p id="wt-search-sub" style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:36px;max-width:260px">Scanning for a real player at your stake level. Both decisions revealed simultaneously.</p>
+
+      <!-- Live queue feed -->
+      <div id="wt-queue-feed" style="width:100%;background:var(--l1);border:1px solid var(--rim);border-radius:14px;overflow:hidden;margin-bottom:16px;text-align:left">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--rim);display:flex;align-items:center;justify-content:space-between">
+          <span class="lbl">Live Queue</span>
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:blink 1.4s ease infinite;display:block"></span>
+            <span style="font-size:10px;color:var(--g);font-family:var(--mono);font-weight:700" id="wt-online-count">—</span>
+          </div>
+        </div>
+        <div id="wt-feed-items" style="font-size:12px;color:var(--t3);font-family:var(--mono)"></div>
+      </div>
+
+      <!-- Stake indicator -->
+      <div style="width:100%;background:var(--l1);border:1px solid var(--rim2);border-radius:14px;padding:16px 20px;text-align:left;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t2)" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+          <span style="font-size:13px;color:var(--t2);font-family:var(--mono)">Stake</span>
+        </div>
+        <span style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--y)">$<span id="wt-stake">25.00</span></span>
+      </div>
+      <!-- Real mode: cancel search -->
+      <div id="wt-real-note" style="display:none;width:100%;margin-top:14px;text-align:center">
+        <div style="font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:12px">Real mode · waiting for a real player · no bots</div>
+        <button class="btn btn-g" style="font-size:11px" onclick="MM.cleanup();G.mode='real';goS('S-new')">Cancel Search</button>
+      </div>
+    </div>
+
+    <!-- Phase: matched -->
+    <div id="wt-phase-matched" style="display:none;flex-direction:column;align-items:center;width:100%">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--gd);border:2px solid var(--gm);display:flex;align-items:center;justify-content:center;margin-bottom:16px;animation:pop .4s var(--spring) both">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="var(--g)" stroke-width="2"><circle cx="13" cy="9" r="5"/><path d="M5 24c0-5 3.5-8 8-8s8 3 8 8"/></svg>
+      </div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--g);font-family:var(--mono);margin-bottom:6px">Opponent Found</div>
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.04em;margin-bottom:4px;font-family:var(--mono)" id="wt-opp-name">—</div>
+
+      <!-- Reputation card -->
+      <div class="matched-opp-card" id="wt-opp-card" style="margin-bottom:12px">
+        <!-- Trust rate -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div>
+            <div class="rep-label" style="margin-bottom:3px">Trust Rate</div>
+            <div style="display:flex;align-items:baseline;gap:4px">
+              <span style="font-size:28px;font-weight:700;letter-spacing:-.04em;font-family:var(--mono)" id="wt-trust-big">—</span>
+              <span style="font-size:13px;color:var(--t3);font-family:var(--mono)">of <span id="wt-rounds-total">—</span> rounds</span>
+            </div>
+          </div>
+          <div id="wt-strat-badge" class="strat-badge" style="background:var(--l3);color:var(--t3);font-size:10px">—</div>
+        </div>
+        <div class="rep-bar-track" style="margin-bottom:14px">
+          <div class="rep-bar-fill" id="wt-trust-bar" style="width:0%"></div>
+        </div>
+        <!-- Last moves dots -->
+        <div class="rep-label" style="margin-bottom:7px">Last 12 Decisions</div>
+        <div class="hist-dots" id="wt-hist-dots" style="margin-bottom:10px"></div>
+        <!-- Tendency line -->
+        <div style="font-size:12px;color:var(--t2);line-height:1.5;font-style:italic;border-top:1px solid var(--rim);padding-top:10px" id="wt-tendency">Analyzing behavior pattern…</div>
+      </div>
+
+      <!-- Decision cards — shown after opponent found -->
+      <div style="width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:12px" id="wt-decision-area">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+          <div class="lbl">Your move — choose now</div>
+          <div id="wt-timer" style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--y);background:var(--yd);border:1px solid var(--ym);border-radius:8px;padding:4px 10px;transition:color .3s,background .3s,border-color .3s">20s</div>
+        </div>
+        <button onclick="makeChoice('trust')" class="choice-card cc-trust" id="wt-btn-trust">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--g);margin-bottom:6px;font-family:var(--mono)">Option A</div>
+          <div style="font-size:36px;font-weight:700;letter-spacing:-.05em;color:var(--g);line-height:1;margin-bottom:8px;font-family:var(--mono)">TRUST</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.6">Both cooperate → both +10%<br>You trust, they defect → you lose all</div>
+        </button>
+        <button onclick="makeChoice('take')" class="choice-card cc-take" id="wt-btn-take">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--r);margin-bottom:6px;font-family:var(--mono)">Option B</div>
+          <div style="font-size:36px;font-weight:700;letter-spacing:-.05em;color:var(--r);line-height:1;margin-bottom:8px;font-family:var(--mono)">TAKE</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.6">You take, they trust → you win all<br>Both defect → both −20%</div>
+        </button>
+        <div style="font-size:11px;color:var(--t3);line-height:1.6;font-family:var(--mono);text-align:center;padding:0 4px">Choice is final the moment you tap. Results reveal simultaneously.</div>
+      </div>
+
+      <!-- Waiting state after choice made -->
+      <div style="width:100%;background:var(--l1);border:1px solid var(--rim2);border-radius:14px;padding:18px 20px;text-align:left;margin-bottom:12px;display:none" id="wt-choice-made-area">
+        <div class="lbl" style="margin-bottom:10px">Waiting for their decision<span id="wt-dots2" style="color:var(--r)"></span></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t2)" stroke-width="1.5"><rect x="2" y="7.5" width="12" height="7" rx="1.5"/><path d="M5 7.5V6a3.5 3.5 0 017 0v1.5"/></svg>
+          <span style="font-size:20px;font-weight:700;font-family:var(--mono)" id="wt-choice2">TRUST</span>
+          <span style="margin-left:auto" class="tag t-m">Locked</span>
+        </div>
+        <p style="font-size:12px;color:var(--t3);line-height:1.6;font-family:var(--mono);margin-top:12px">Results reveal simultaneously — neither player can react to the other.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ RESULT ═══ -->
+<div class="screen" id="S-result">
+  <div id="result-root"></div>
+</div>
+
+<!-- ═══ PROFILE ═══ -->
+<div class="screen" id="S-profile">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(16px + var(--safe-top)) 20px 16px;background:var(--bg)">
+    <div style="font-size:20px;font-weight:700;letter-spacing:-.04em">Profile</div>
+    <button onclick="openSh('SH-settings')" class="ico-btn" style="background:var(--l1)">
+      <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="var(--t1)" stroke-width="1.6"><circle cx="9.5" cy="9.5" r="2.8"/><path d="M9.5 1.5v2M9.5 15.5v2M1.5 9.5h2M15.5 9.5h2M3.5 3.5l1.5 1.5M14 14l1.5 1.5M3.5 15.5l1.5-1.5M14 5l1.5-1.5"/></svg>
+    </button>
+  </div>
+
+  <!-- Avatar -->
+  <div style="padding:24px 20px;border-bottom:1px solid var(--rim);display:flex;gap:18px;align-items:center">
+    <div class="pf-av" id="pf-av">P</div>
+    <div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px" id="pf-name">Player</div>
+      <div style="display:flex;gap:6px">
+        <span class="tag t-m">Verified</span>
+        <span class="tag t-m" id="pf-mode-badge">Demo Player</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--rim)">
+    <div class="tap" onclick="openM('M-stats')" style="padding:18px;text-align:center;border-right:1px solid var(--rim)">
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.05em;font-family:var(--mono)" id="pf-r">0</div>
+      <div class="lbl" style="margin-top:5px">Rounds</div>
+    </div>
+    <div class="tap" onclick="openM('M-stats')" style="padding:18px;text-align:center;border-right:1px solid var(--rim)">
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.05em;color:var(--g);font-family:var(--mono)" id="pf-t">—</div>
+      <div class="lbl" style="margin-top:5px">Trust</div>
+    </div>
+    <div class="tap" onclick="openM('M-balance')" style="padding:18px;text-align:center">
+      <div style="font-size:20px;font-weight:700;letter-spacing:-.04em;color:var(--y);font-family:var(--mono)">$<span id="pf-b">250</span></div>
+      <div class="lbl" style="margin-top:5px">Balance</div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <div>
+    <div class="menu-row" onclick="openM('M-history')">
+      <div class="menu-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t2)" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h7"/></svg></div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:600">Round History</div><div style="font-size:12px;color:var(--t3);margin-top:2px">All rounds & P&L</div></div>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.6"><path d="M4 2l6 5-6 5"/></svg>
+    </div>
+    <div class="menu-row" onclick="openM('M-stats')">
+      <div class="menu-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--g)" stroke-width="1.5"><path d="M2 13l4-5 3 2.5 4.5-7"/></svg></div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:600">Statistics</div><div style="font-size:12px;color:var(--t3);margin-top:2px">Trust rate, win rate, P&L</div></div>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.6"><path d="M4 2l6 5-6 5"/></svg>
+    </div>
+    <div id="profile-deposit-row" class="menu-row" onclick="goS('S-mode')">
+      <div class="menu-ico" style="border-color:var(--rim2);background:var(--l1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t3)" stroke-width="1.5"><path d="M8 2v12M3 8l5-5 5 5"/></svg></div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:600;color:var(--t2)">Deposit</div><div class="menu-row-sub" style="font-size:12px;color:var(--t3);margin-top:2px">Available in real money mode</div></div>
+      <span class="tag t-m menu-row-badge">Real Mode</span>
+    </div>
+    <div class="menu-row" onclick="openSh('SH-withdraw')">
+      <div class="menu-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--y)" stroke-width="1.5"><path d="M8 14V2M3 9l5 5 5-5"/></svg></div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:600">Withdraw</div><div style="font-size:12px;color:var(--t3);margin-top:2px">Move winnings out</div></div>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.6"><path d="M4 2l6 5-6 5"/></svg>
+    </div>
+    <div class="menu-row" onclick="openSh('SH-settings')">
+      <div class="menu-ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t2)" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2"/></svg></div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:600">Settings</div></div>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.6"><path d="M4 2l6 5-6 5"/></svg>
+    </div>
+  </div>
+  <div style="padding:16px 20px;font-size:12px;color:var(--t3);text-align:center;line-height:1.8;font-family:var(--mono)" id="pf-footer">
+    Demo mode · <span style="color:var(--r);cursor:pointer" onclick="goS('S-mode')">Switch to real money →</span>
+  </div>
+</div>
+
+<!-- ═══ REFERRAL ═══ -->
+<div class="screen" id="S-referral">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(16px + var(--safe-top)) 20px 16px;background:var(--bg);position:sticky;top:0;z-index:1;border-bottom:1px solid var(--rim)">
+    <div>
+      <div style="font-size:20px;font-weight:700;letter-spacing:-.04em">Referral</div>
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:2px;letter-spacing:.08em;text-transform:uppercase">Invite friends · Earn together</div>
+    </div>
+  </div>
+
+  <!-- Your ref link -->
+  <div style="padding:20px 20px 0">
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:16px;padding:20px">
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">Your referral link</div>
+      <div id="ref-link-text" style="font-family:var(--mono);font-size:13px;color:var(--t1);word-break:break-all;line-height:1.5;margin-bottom:14px">verdict.game?ref=—</div>
+      <button onclick="copyRefLink()" style="width:100%;padding:12px;background:var(--r);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;font-family:var(--mono);letter-spacing:.06em;cursor:pointer">Copy link</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div style="padding:16px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:16px;text-align:center">
+      <div id="ref-count" style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--t1)">0</div>
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-top:4px">Invited</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:16px;text-align:center">
+      <div id="ref-earned" style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--g)">$0</div>
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-top:4px">Earned</div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div style="padding:16px 20px">
+    <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">How it works</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--bg2);border:1px solid var(--rim);border-radius:12px;padding:14px 16px">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);font-weight:700;color:var(--r);font-size:13px">1</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">Share your link</div>
+          <div style="font-size:12px;color:var(--t3);line-height:1.5">Send it to a friend. They sign up via your link.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--bg2);border:1px solid var(--rim);border-radius:12px;padding:14px 16px">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);font-weight:700;color:var(--r);font-size:13px">2</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">They play</div>
+          <div style="font-size:12px;color:var(--t3);line-height:1.5">Your friend plays their first real-money round.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--bg2);border:1px solid var(--rim);border-radius:12px;padding:14px 16px">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(0,217,126,.1);border:1px solid rgba(0,217,126,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);font-weight:700;color:var(--g);font-size:13px">$</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">You earn 10% rake</div>
+          <div style="font-size:12px;color:var(--t3);line-height:1.5">You get 10% of the rake from every round they play. Forever.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="S-leaderboard">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(16px + var(--safe-top)) 20px 16px;background:var(--bg)">
+    <div>
+      <div style="font-size:20px;font-weight:700;letter-spacing:-.04em">Leaderboard</div>
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:2px;letter-spacing:.08em;text-transform:uppercase">This device · all players</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--g);animation:blink 1.4s ease infinite;display:block"></span>
+      <span style="font-size:10px;color:var(--g);font-family:var(--mono);font-weight:700;letter-spacing:.1em">LIVE</span>
+    </div>
+  </div>
+
+  <!-- My rank banner -->
+  <div style="padding:0 16px 12px;display:flex;gap:10px">
+    <div style="flex:1;background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:12px;color:var(--t3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase">Your rank</span>
+      <span id="lb-my-rank-num" style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--r)">#—</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;border-bottom:1px solid var(--rim);margin:0 16px 4px">
+    <div id="lb-tab-bal"   onclick="lbSetTab('bal')"   style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;cursor:pointer;border-bottom:2px solid var(--r);color:var(--r);text-transform:uppercase">Balance</div>
+    <div id="lb-tab-pnl"   onclick="lbSetTab('pnl')"   style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;cursor:pointer;border-bottom:2px solid transparent;color:var(--t3);text-transform:uppercase">P&amp;L</div>
+    <div id="lb-tab-trust" onclick="lbSetTab('trust')" style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;cursor:pointer;border-bottom:2px solid transparent;color:var(--t3);text-transform:uppercase">Trust</div>
+  </div>
+
+  <!-- List -->
+  <div id="lb-list" style="padding:8px 16px;display:flex;flex-direction:column;gap:6px"></div>
+
+  <div style="padding:16px 20px;font-size:11px;color:var(--t3);text-align:center;font-family:var(--mono);line-height:1.7">
+    Rankings based on all accounts played on this device.<br>
+    <span style="color:var(--r);cursor:pointer" onclick="openChallengeSheet()">Challenge a friend to beat your score →</span>
+  </div>
+</div>
+
+<!-- ═══ CHALLENGE SHEET ═══ -->
+<div class="sheet" id="SH-challenge">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl">Challenge a Friend</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+    <div style="background:var(--l1);border-radius:14px;padding:18px">
+      <div class="lbl" style="margin-bottom:8px">Your challenge card</div>
+      <div id="ch-preview" style="font-size:14px;color:var(--t1);line-height:1.7;font-family:var(--mono)">—</div>
+    </div>
+    <div style="background:var(--l1);border-radius:14px;overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--rim)">
+        <div class="lbl" style="margin-bottom:6px">Share link</div>
+        <div id="ch-link" style="font-size:12px;color:var(--r);font-family:var(--mono);word-break:break-all;cursor:pointer" onclick="copyChallenge()">Generating…</div>
+      </div>
+      <div style="padding:12px 18px;font-size:11px;color:var(--t3);font-family:var(--mono)">Tap the link above to copy it. Your friend opens it and plays — results compared instantly.</div>
+    </div>
+    <button class="btn btn-p" onclick="copyChallenge()">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="9" height="10" rx="1.5"/><path d="M5 4V2.5A1.5 1.5 0 016.5 1H13a1.5 1.5 0 011.5 1.5v7A1.5 1.5 0 0113 11h-1.5"/></svg>
+      Copy Challenge Link
+    </button>
+    <div id="ch-copied" style="display:none;text-align:center;font-size:11px;color:var(--g);font-family:var(--mono);font-weight:700;letter-spacing:.1em">✓ COPIED TO CLIPBOARD</div>
+    <button class="btn btn-g" onclick="shareResult()">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="2.5" r="1.5"/><circle cx="2.5" cy="7.5" r="1.5"/><circle cx="11" cy="12.5" r="1.5"/><path d="M4 7l6-4M4 8l6 4"/></svg>
+      Share via…
+    </button>
+  </div>
+</div>
+
+<!-- ═══ SHARE CARD OVERLAY ═══ -->
+<div id="share-overlay" style="display:none;position:fixed;inset:0;max-width:430px;margin:0 auto;background:rgba(0,0,0,.94);z-index:600;align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%">
+    <div id="share-card" style="width:100%;background:var(--bg2);border:1px solid var(--rim2);border-radius:20px;overflow:hidden;margin-bottom:16px">
+      <div style="background:linear-gradient(135deg,#111 0%,#1a0a0e 100%);padding:28px 24px 24px;text-align:center;border-bottom:1px solid var(--rim)">
+        <div style="font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.3em;color:var(--r);margin-bottom:14px">VERDICT · PRISONER'S DILEMMA</div>
+        <div id="sc-outcome" style="font-size:40px;font-weight:700;font-family:var(--mono);letter-spacing:-.05em;margin-bottom:6px"></div>
+        <div id="sc-sub" style="font-size:13px;color:var(--t2);line-height:1.5"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--rim)">
+        <div style="padding:18px;text-align:center;border-right:1px solid var(--rim)">
+          <div class="lbl" style="margin-bottom:6px">Me</div>
+          <div id="sc-my-choice" style="font-size:18px;font-weight:700;font-family:var(--mono);margin-bottom:4px"></div>
+          <div id="sc-my-delta" style="font-family:var(--mono);font-size:15px;font-weight:700"></div>
+        </div>
+        <div style="padding:18px;text-align:center">
+          <div class="lbl" style="margin-bottom:6px">Them</div>
+          <div id="sc-their-choice" style="font-size:18px;font-weight:700;font-family:var(--mono);margin-bottom:4px"></div>
+          <div id="sc-their-delta" style="font-family:var(--mono);font-size:15px;font-weight:700"></div>
+        </div>
+      </div>
+      <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="lbl" style="margin-bottom:4px">Trust Rate</div>
+          <div id="sc-trust-rate" style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--g)"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="lbl" style="margin-bottom:4px">Rounds</div>
+          <div id="sc-rounds" style="font-size:22px;font-weight:700;font-family:var(--mono)"></div>
+        </div>
+      </div>
+      <div style="padding:10px 20px 16px;text-align:center;border-top:1px solid var(--rim)">
+        <div style="font-size:10px;color:var(--t3);font-family:var(--mono);letter-spacing:.12em">Beat me → verdict.game</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-p" onclick="shareResult()">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="2.5" r="1.5"/><circle cx="2.5" cy="7.5" r="1.5"/><circle cx="11" cy="12.5" r="1.5"/><path d="M4 7l6-4M4 8l6 4"/></svg>
+        Share
+      </button>
+      <button class="btn btn-g" onclick="closeShareOverlay()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<div class="bnav" id="TABNAV" style="grid-template-columns:1fr 1fr 72px 1fr 1fr">
+  <div class="bni" id="bn-home" onclick="switchTab('home')">
+    <div class="bni-ico">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 11L11 2l9 9"/><path d="M4.5 9.5v10h4.5v-5.5h4v5.5h4.5V9.5"/></svg>
+    </div>
+    <span class="bni-lbl">Home</span>
+  </div>
+  <div class="bni" id="bn-lb" onclick="switchTab('leaderboard')">
+    <div class="bni-ico">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="12" width="4" height="8" rx="1"/><rect x="9" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>
+    </div>
+    <span class="bni-lbl">Ranks</span>
+  </div>
+  <div class="fab-wrap" onclick="goS('S-mode')">
+    <div class="fab">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><polygon points="6,3 19,11 6,19" fill="white"/></svg>
+    </div>
+    <span class="fab-lbl">Play</span>
+  </div>
+  <div class="bni" id="bn-profile" onclick="switchTab('profile')">
+    <div class="bni-ico">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="8" r="4.5"/><path d="M3 21c0-4.8 3.8-8 8-8s8 3.2 8 8"/></svg>
+    </div>
+    <span class="bni-lbl">Profile</span>
+  </div>
+  <div class="bni" id="bn-referral" onclick="switchTab('referral')">
+    <div class="bni-ico">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="11" r="3"/><circle cx="17" cy="5" r="3"/><circle cx="17" cy="17" r="3"/><path d="M8 11h3.5M14 6.5l-2.5 3M14 15.5l-2.5-3"/></svg>
+    </div>
+    <span class="bni-lbl">Referral</span>
+  </div>
+</div>
+
+<!-- ═══ OVERLAY ═══ -->
+<div class="bdr" id="BDR" onclick="closeAll()"></div>
+
+<!-- ═══ SHEETS ═══ -->
+
+<!-- Rules -->
+<div class="sheet" id="SH-rules">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl">Round Rules</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="border:1px solid var(--gm);padding:18px;background:var(--gd);border-radius:12px">
+      <div style="margin-bottom:8px"><span class="tag t-g">Trust + Trust</span></div>
+      <div style="font-size:24px;font-weight:700;color:var(--g);font-family:var(--mono);margin-bottom:6px">Both +10%</div>
+      <p style="font-size:13px;color:var(--t2);line-height:1.65">Both cooperate. The only win-win. Both receive stake plus 10% profit.</p>
+    </div>
+    <div style="border:1px solid var(--rm);padding:18px;background:var(--rd);border-radius:12px">
+      <div style="margin-bottom:8px"><span class="tag t-r">Take + Take</span></div>
+      <div style="font-size:24px;font-weight:700;color:var(--r);font-family:var(--mono);margin-bottom:6px">Both −20%</div>
+      <p style="font-size:13px;color:var(--t2);line-height:1.65">Mutual defection. Nash equilibrium — rational individually, disastrous together.</p>
+    </div>
+    <div style="border:1px solid var(--ym);padding:18px;background:var(--yd);border-radius:12px">
+      <div style="margin-bottom:8px"><span class="tag t-y">One Takes</span></div>
+      <div style="font-size:24px;font-weight:700;color:var(--y);font-family:var(--mono);margin-bottom:6px">Taker wins all</div>
+      <p style="font-size:13px;color:var(--t2);line-height:1.65">Betrayal. Defector claims both stakes. Maximum gain at maximum moral cost.</p>
+    </div>
+    <div style="padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--t3);line-height:1.7;background:var(--l1);border-radius:10px">No randomness. Outcomes determined solely by both choices.<br><br><span style="color:var(--t2)">Platform fee: 5% taken from winnings only. No fee on losses or draws. Shown transparently on every result screen.</span></div>
+  </div>
+</div>
+
+<!-- Opponent -->
+<div class="sheet" id="SH-opp">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl">Opponent Profile</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+
+    <!-- Identity row -->
+    <div style="display:flex;gap:14px;align-items:center;background:var(--l1);border-radius:14px;padding:16px">
+      <div id="sh-opp-av" style="width:52px;height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;font-family:var(--mono);flex-shrink:0;background:var(--l2);border:1px solid var(--rim2);color:var(--t2)">?</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:18px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px" id="sh-opp-name">Anonymous</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag t-m">Identity hidden</span>
+          <span id="sh-opp-strat-tag" class="strat-badge" style="font-size:9px;padding:4px 8px;background:var(--l3);color:var(--t3)">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust rate big stat -->
+    <div style="background:var(--l1);border-radius:14px;padding:20px">
+      <div class="rep-label" style="margin-bottom:10px">Overall Trust Rate</div>
+      <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:12px">
+        <div style="font-size:52px;font-weight:700;letter-spacing:-.06em;line-height:1;font-family:var(--mono)" id="sh-trust-pct-big">—</div>
+        <div style="padding-bottom:6px">
+          <div style="font-size:12px;color:var(--t2);font-family:var(--mono)" id="sh-rounds-desc">— rounds played</div>
+          <div style="font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:2px" id="sh-wins-desc">— wins</div>
+        </div>
+      </div>
+      <div class="rep-bar-track">
+        <div class="rep-bar-fill" id="sh-trust-bar" style="width:0%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px">
+        <span style="font-size:9px;color:var(--t3);font-family:var(--mono)">0% · Always Take</span>
+        <span style="font-size:9px;color:var(--t3);font-family:var(--mono)">100% · Always Trust</span>
+      </div>
+    </div>
+
+    <!-- Last N decisions dots -->
+    <div style="background:var(--l1);border-radius:14px;padding:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span class="rep-label">Last Decisions</span>
+        <span style="font-size:10px;color:var(--t3);font-family:var(--mono)" id="sh-hist-count">—</span>
+      </div>
+      <div class="hist-dots" id="sh-hist-dots" style="gap:5px"></div>
+      <div style="display:flex;gap:12px;margin-top:10px">
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:var(--g)"></div><span style="font-size:10px;color:var(--t3);font-family:var(--mono)">Trust</span></div>
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:var(--r)"></div><span style="font-size:10px;color:var(--t3);font-family:var(--mono)">Take</span></div>
+      </div>
+    </div>
+
+    <!-- Strategy analysis -->
+    <div style="background:var(--l1);border-radius:14px;padding:18px">
+      <div class="rep-label" style="margin-bottom:10px">Behavior Analysis</div>
+      <div style="font-size:14px;color:var(--t1);line-height:1.65" id="sh-tendency-long">Analyzing…</div>
+    </div>
+
+    <!-- Fixed facts -->
+    <div style="background:var(--l1);border-radius:14px;overflow:hidden">
+      <div class="row"><span style="font-size:14px;color:var(--t2);flex:1">Identity</span><span style="font-weight:600;font-size:14px">Permanently hidden</span></div>
+      <div class="row"><span style="font-size:14px;color:var(--t2);flex:1">Communication</span><span style="font-weight:600;font-size:14px;color:var(--r)">None — by design</span></div>
+      <div class="row" style="border-bottom:none"><span style="font-size:14px;color:var(--t2);flex:1">Their stake</span><span style="font-weight:600;font-size:14px;color:var(--g)">Equal to yours</span></div>
+    </div>
+
+    <div style="font-size:11px;color:var(--t3);font-family:var(--mono);line-height:1.7;text-align:center;padding:0 8px">
+      History shown is public reputation data.<br>Past behaviour doesn't guarantee future choices.
+    </div>
+  </div>
+</div>
+
+<!-- Insight -->
+<div class="sheet" id="SH-insight">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl">Game Theory</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="padding:20px">
+    <div id="sh-ins" style="font-size:15px;color:var(--t2);line-height:1.8;margin-bottom:24px"></div>
+    <div style="border-top:1px solid var(--rim);padding-top:20px">
+      <div class="lbl" style="margin-bottom:10px">Prisoner's Dilemma</div>
+      <p style="font-size:13px;color:var(--t2);line-height:1.7">Verdict is a direct implementation of one of the most studied problems in game theory, economics, and evolutionary biology. Can rational individuals cooperate for mutual benefit when acting alone?</p>
+    </div>
+  </div>
+</div>
+
+<!-- Deposit -->
+<div class="sheet" id="SH-deposit">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl" id="dep-hdr-ttl">Deposit</span>
+    <button class="sh-close" onclick="depReset();closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+
+  <!-- STEP 1: Amount + Method -->
+  <div id="dep-step-1" style="padding:20px">
+    <div class="lbl" style="margin-bottom:12px">Select Amount</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+      <div class="tap dep-amt-row" onclick="depPickAmt(this,50)" data-amt="50" style="background:var(--l1);border:1.5px solid var(--rim2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:60px;transition:all .15s"><div><div style="font-size:18px;font-weight:700;font-family:var(--mono)">$50</div><div style="font-size:11px;color:var(--t3);margin-top:2px">Starter</div></div></div>
+      <div class="tap dep-amt-row" onclick="depPickAmt(this,100)" data-amt="100" style="background:var(--rd);border:1.5px solid var(--rm);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:60px;transition:all .15s"><div><div style="font-size:18px;font-weight:700;color:var(--r);font-family:var(--mono)">$100</div><div style="font-size:11px;color:var(--t2);margin-top:2px">Most popular</div></div><span class="tag t-r">Top</span></div>
+      <div class="tap dep-amt-row" onclick="depPickAmt(this,250)" data-amt="250" style="background:var(--l1);border:1.5px solid var(--rim2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:60px;transition:all .15s"><div><div style="font-size:18px;font-weight:700;font-family:var(--mono)">$250</div><div style="font-size:11px;color:var(--t3);margin-top:2px">Serious</div></div></div>
+      <div class="tap dep-amt-row" onclick="depPickAmt(this,500)" data-amt="500" style="background:var(--l1);border:1.5px solid var(--rim2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;min-height:60px;transition:all .15s"><div><div style="font-size:18px;font-weight:700;font-family:var(--mono)">$500</div><div style="font-size:11px;color:var(--t3);margin-top:2px">High stakes</div></div></div>
+    </div>
+    <div class="lbl" style="margin-bottom:12px">Payment Method</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+      <div class="tap dep-method-row" onclick="depPickMethod(this,'card')" data-method="card" style="background:var(--l1);border:1.5px solid var(--rim2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;min-height:56px;cursor:pointer;transition:all .15s">
+        <div style="width:36px;height:24px;background:#1434CB;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#fff;font-size:9px;font-weight:800">VISA</span></div>
+        <div style="flex:1;font-size:14px;font-weight:600">Card</div>
+        <span class="tag t-g">Instant</span>
+      </div>
+      <div class="tap dep-method-row" onclick="depPickMethod(this,'crypto')" data-method="crypto" style="background:var(--l1);border:1.5px solid var(--rim2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;min-height:56px;cursor:pointer;transition:all .15s">
+        <div style="width:36px;height:36px;border-radius:50%;background:#F7931A;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;color:#fff;font-size:15px">₿</div>
+        <div style="flex:1;font-size:14px;font-weight:600">Crypto</div>
+        <span class="tag t-g">~10 min</span>
+      </div>
+    </div>
+    <button id="dep-continue-btn" class="btn btn-g" onclick="depGoStep2()" style="opacity:.4;pointer-events:none">Select amount &amp; method →</button>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:6px;justify-content:center">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--t3)" stroke-width="1.5"><rect x="2" y="5" width="8" height="6" rx="1"/><path d="M4 5V3.5a2 2 0 014 0V5"/></svg>
+      <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">Demo mode — no real money processed</span>
+    </div>
+  </div>
+
+  <!-- STEP 2a: Card form -->
+  <div id="dep-step-2-card" style="display:none;padding:20px">
+    <button onclick="depGoStep1()" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--t2);cursor:pointer;font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.1em;padding:0;margin-bottom:20px">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 2L4 7l5 5"/></svg>BACK
+    </button>
+    <div style="background:var(--rd);border:1px solid var(--rm);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:var(--t2)">Depositing</span>
+      <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--r)" id="dep-amt-display">$100</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Card Number</div>
+        <input class="input" id="dep-card-num" placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric" oninput="fmtCard(this)" onfocus="depClearErr()">
+        <div id="dep-card-err" style="display:none;font-size:11px;color:var(--r);margin-top:6px;font-family:var(--mono)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="lbl" style="margin-bottom:8px">Expiry</div>
+          <input class="input" id="dep-card-exp" placeholder="MM/YY" maxlength="5" inputmode="numeric" oninput="fmtExpiry(this)" onfocus="depClearErr()">
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:8px">CVV</div>
+          <input class="input" id="dep-card-cvv" placeholder="•••" maxlength="4" inputmode="numeric" type="password" onfocus="depClearErr()">
+        </div>
+      </div>
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Name on Card</div>
+        <input class="input" id="dep-card-name" placeholder="FIRST LAST" onfocus="depClearErr()">
+      </div>
+    </div>
+    <button class="btn btn-p" id="dep-pay-btn" onclick="depSubmitCard()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="12" height="9" rx="1.5"/><path d="M1 6h12"/></svg>
+      Pay <span id="dep-pay-amt">$100</span>
+    </button>
+    <div style="margin-top:10px;text-align:center;font-size:10px;color:var(--t3);font-family:var(--mono)">Demo only · No real charge · Data not stored</div>
+  </div>
+
+  <!-- STEP 2b: Crypto -->
+  <div id="dep-step-2-crypto" style="display:none;padding:20px">
+    <button onclick="depGoStep1()" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--t2);cursor:pointer;font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.1em;padding:0;margin-bottom:20px">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 2L4 7l5 5"/></svg>BACK
+    </button>
+    <div style="background:var(--rd);border:1px solid var(--rm);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:var(--t2)">Depositing</span>
+      <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--r)" id="dep-crypto-amt-display">$100</span>
+    </div>
+    <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:14px;padding:20px;margin-bottom:16px;text-align:center">
+      <!-- Fake QR -->
+      <div style="width:140px;height:140px;margin:0 auto 14px;background:var(--bg);border:1px solid var(--rim2);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+        <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+          <rect x="5" y="5" width="30" height="30" rx="3" fill="var(--t3)"/><rect x="10" y="10" width="20" height="20" rx="2" fill="var(--bg2)"/><rect x="13" y="13" width="14" height="14" rx="1" fill="var(--t3)"/>
+          <rect x="65" y="5" width="30" height="30" rx="3" fill="var(--t3)"/><rect x="70" y="10" width="20" height="20" rx="2" fill="var(--bg2)"/><rect x="73" y="13" width="14" height="14" rx="1" fill="var(--t3)"/>
+          <rect x="5" y="65" width="30" height="30" rx="3" fill="var(--t3)"/><rect x="10" y="70" width="20" height="20" rx="2" fill="var(--bg2)"/><rect x="13" y="73" width="14" height="14" rx="1" fill="var(--t3)"/>
+          <rect x="42" y="5" width="6" height="6" fill="var(--t3)"/><rect x="50" y="5" width="6" height="6" fill="var(--t3)"/><rect x="42" y="13" width="6" height="6" fill="var(--t3)"/>
+          <rect x="42" y="42" width="6" height="6" fill="var(--t3)"/><rect x="50" y="42" width="6" height="6" fill="var(--t3)"/><rect x="58" y="42" width="6" height="6" fill="var(--t3)"/>
+          <rect x="5" y="42" width="6" height="6" fill="var(--t3)"/><rect x="13" y="42" width="6" height="6" fill="var(--t3)"/>
+          <rect x="65" y="42" width="6" height="6" fill="var(--t3)"/><rect x="73" y="42" width="6" height="6" fill="var(--t3)"/>
+          <rect x="65" y="50" width="6" height="6" fill="var(--t3)"/><rect x="73" y="58" width="6" height="6" fill="var(--t3)"/>
+          <rect x="42" y="65" width="6" height="6" fill="var(--t3)"/><rect x="50" y="73" width="6" height="6" fill="var(--t3)"/><rect x="58" y="65" width="6" height="6" fill="var(--t3)"/>
+          <rect x="65" y="73" width="6" height="6" fill="var(--t3)"/><rect x="73" y="65" width="6" height="6" fill="var(--t3)"/>
+          <rect x="81" y="73" width="6" height="6" fill="var(--t3)"/><rect x="81" y="81" width="6" height="6" fill="var(--t3)"/>
+        </svg>
+        <div style="position:absolute;width:28px;height:28px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800">₿</div>
+      </div>
+      <div class="lbl" style="margin-bottom:6px">BTC Address (Demo)</div>
+      <div id="dep-btc-addr" style="font-family:var(--mono);font-size:10px;color:var(--t2);word-break:break-all;cursor:pointer;background:var(--bg2);padding:8px;border-radius:6px" onclick="copyCryptoAddr()">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+      <div style="font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:6px">Tap address to copy</div>
+    </div>
+    <div style="background:var(--yd);border:1px solid var(--ym);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--y);font-family:var(--mono);line-height:1.6">
+      ⚠ Demo mode — no real BTC required. Click "Simulate Deposit" to add funds instantly.
+    </div>
+    <button class="btn btn-p" onclick="depSubmitCrypto()">Simulate Deposit →</button>
+  </div>
+
+  <!-- STEP 3: Processing -->
+  <div id="dep-step-processing" style="display:none;padding:40px 20px;text-align:center">
+    <div id="dep-proc-spinner" style="width:56px;height:56px;border:3px solid var(--l3);border-top-color:var(--r);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px"></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px" id="dep-proc-title">Processing payment…</div>
+    <div style="font-size:13px;color:var(--t2);font-family:var(--mono)" id="dep-proc-sub">Contacting payment provider</div>
+  </div>
+
+  <!-- STEP 4a: Success -->
+  <div id="dep-step-success" style="display:none;padding:40px 20px;text-align:center">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--gd);border:2px solid var(--gm);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:pop .4s var(--spring) both">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="var(--g)" stroke-width="2.5" stroke-linecap="round"><path d="M5 14l7 7L23 7"/></svg>
+    </div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;color:var(--g)">Deposit successful</div>
+    <div style="font-family:var(--mono);font-size:28px;font-weight:700;margin-bottom:6px" id="dep-success-amt">+$100</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:28px" id="dep-success-bal">New balance: $350.00</div>
+    <button class="btn btn-p" onclick="depReset();closeAll()">Done →</button>
+  </div>
+
+  <!-- STEP 4b: Error -->
+  <div id="dep-step-error" style="display:none;padding:40px 20px;text-align:center">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--rd);border:2px solid var(--rm);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:pop .4s var(--spring) both">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="var(--r)" stroke-width="2.5" stroke-linecap="round"><path d="M5 5l18 18M23 5L5 23"/></svg>
+    </div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;color:var(--r)">Payment failed</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:6px;line-height:1.6" id="dep-err-msg">Your card was declined. Please check your details and try again.</div>
+    <div style="background:var(--l1);border:1px solid var(--rim);border-radius:10px;padding:12px 16px;margin-bottom:24px;text-align:left">
+      <div class="lbl" style="margin-bottom:8px">What to try</div>
+      <div id="dep-err-tips" style="font-size:12px;color:var(--t2);line-height:1.8;font-family:var(--mono)"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-p" onclick="depGoStep2()">Try Again</button>
+      <button class="btn btn-g" onclick="depSwitchMethod()">Try Different Method</button>
+      <button class="btn btn-g" onclick="depReset();closeAll()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Withdraw -->
+<div class="sheet" id="SH-withdraw">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl">Withdraw</span>
+    <button class="sh-close" onclick="wdReset();closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+
+  <!-- STEP 1: Pick method -->
+  <div id="wd-step-1" style="padding:20px">
+    <div style="border:1px solid var(--gm);border-radius:16px;padding:24px;text-align:center;margin-bottom:20px;background:var(--gd)">
+      <div class="lbl" style="margin-bottom:8px">Available to withdraw</div>
+      <div style="font-size:52px;font-weight:700;letter-spacing:-.05em;color:var(--g);font-family:var(--mono)">$<span id="wd-bal">250.00</span></div>
+      <div id="wd-zero-warn" style="display:none;font-size:12px;color:var(--y);margin-top:8px;font-family:var(--mono)">⚠ Nothing to withdraw yet — play some rounds first</div>
+    </div>
+    <div class="lbl" style="margin-bottom:10px">Withdraw to</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
+      <div class="tap" onclick="wdPickMethod('bank')" style="background:var(--l1);border:1.5px solid var(--rim2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;min-height:56px;cursor:pointer;transition:all .15s" id="wd-m-bank">
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">Bank Account</div><div style="font-size:12px;color:var(--t3);margin-top:2px">2–5 business days</div></div>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.6"><path d="M4 2l6 5-6 5"/></svg>
+      </div>
+      <div class="tap" onclick="wdPickMethod('crypto')" style="background:var(--l1);border:1.5px solid var(--rim2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;min-height:56px;cursor:pointer;transition:all .15s" id="wd-m-crypto">
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">Crypto Wallet</div><div style="font-size:12px;color:var(--t3);margin-top:2px">~1 hour</div></div>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--t3)" stroke-width="1.6"><path d="M4 2l6 5-6 5"/></svg>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--t3);text-align:center;font-family:var(--mono)">Demo mode · withdrawal simulated · no real funds moved</div>
+  </div>
+
+  <!-- STEP 2a: Bank form -->
+  <div id="wd-step-2-bank" style="display:none;padding:20px">
+    <button onclick="wdGoStep1()" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--t2);cursor:pointer;font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.1em;padding:0;margin-bottom:20px">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 2L4 7l5 5"/></svg>BACK
+    </button>
+    <div style="background:var(--gd);border:1px solid var(--gm);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:var(--t2)">Withdrawing</span>
+      <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--g)" id="wd-bank-display">$250.00</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Account Holder Name</div>
+        <input class="input" id="wd-bank-name" placeholder="Full name" onfocus="wdClearErr()">
+      </div>
+      <div>
+        <div class="lbl" style="margin-bottom:8px">IBAN / Account Number</div>
+        <input class="input" id="wd-bank-iban" placeholder="DE89 3704 0044 0532 0130 00" onfocus="wdClearErr()">
+        <div id="wd-bank-err" style="display:none;font-size:11px;color:var(--r);margin-top:6px;font-family:var(--mono)"></div>
+      </div>
+      <div>
+        <div class="lbl" style="margin-bottom:8px">BIC / SWIFT</div>
+        <input class="input" id="wd-bank-bic" placeholder="COBADEFFXXX" onfocus="wdClearErr()">
+      </div>
+    </div>
+    <button class="btn btn-gr" onclick="wdSubmit('bank')">
+      Withdraw $<span id="wd-bank-btn-amt">250.00</span>
+    </button>
+    <div style="margin-top:10px;text-align:center;font-size:10px;color:var(--t3);font-family:var(--mono)">Demo only · No real funds moved · Data not stored</div>
+  </div>
+
+  <!-- STEP 2b: Crypto wallet -->
+  <div id="wd-step-2-crypto" style="display:none;padding:20px">
+    <button onclick="wdGoStep1()" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--t2);cursor:pointer;font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.1em;padding:0;margin-bottom:20px">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 2L4 7l5 5"/></svg>BACK
+    </button>
+    <div style="background:var(--gd);border:1px solid var(--gm);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;color:var(--t2)">Withdrawing</span>
+      <span style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--g)" id="wd-crypto-display">$250.00</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Network</div>
+        <div style="display:flex;gap:8px">
+          <div class="chip" id="wd-net-btc" onclick="wdPickNet(this,'BTC')" style="flex:1;text-align:center">BTC</div>
+          <div class="chip" id="wd-net-eth" onclick="wdPickNet(this,'ETH')" style="flex:1;text-align:center">ETH</div>
+          <div class="chip" id="wd-net-usdt" onclick="wdPickNet(this,'USDT')" style="flex:1;text-align:center">USDT</div>
+        </div>
+      </div>
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Wallet Address</div>
+        <input class="input" id="wd-wallet-addr" placeholder="bc1q…" onfocus="wdClearErr()">
+        <div id="wd-wallet-err" style="display:none;font-size:11px;color:var(--r);margin-top:6px;font-family:var(--mono)"></div>
+      </div>
+    </div>
+    <button class="btn btn-gr" onclick="wdSubmit('crypto')">
+      Withdraw $<span id="wd-crypto-btn-amt">250.00</span>
+    </button>
+    <div style="margin-top:10px;text-align:center;font-size:10px;color:var(--t3);font-family:var(--mono)">Demo only · No real funds moved · Data not stored</div>
+  </div>
+
+  <!-- STEP 3: Processing -->
+  <div id="wd-step-processing" style="display:none;padding:40px 20px;text-align:center">
+    <div style="width:56px;height:56px;border:3px solid var(--l3);border-top-color:var(--g);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px"></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px" id="wd-proc-title">Processing withdrawal…</div>
+    <div style="font-size:13px;color:var(--t2);font-family:var(--mono)" id="wd-proc-sub">Verifying your account</div>
+  </div>
+
+  <!-- STEP 4a: Success -->
+  <div id="wd-step-success" style="display:none;padding:40px 20px;text-align:center">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--gd);border:2px solid var(--gm);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:pop .4s var(--spring) both">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="var(--g)" stroke-width="2.5" stroke-linecap="round"><path d="M5 14l7 7L23 7"/></svg>
+    </div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;color:var(--g)">Withdrawal initiated</div>
+    <div style="font-family:var(--mono);font-size:24px;font-weight:700;margin-bottom:6px" id="wd-success-amt">$250.00</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:6px" id="wd-success-sub">Funds on their way</div>
+    <div style="font-size:12px;color:var(--t3);font-family:var(--mono);margin-bottom:28px" id="wd-success-eta">ETA: 2–5 business days</div>
+    <button class="btn btn-g" onclick="wdReset();closeAll()">Done</button>
+  </div>
+
+  <!-- STEP 4b: Error -->
+  <div id="wd-step-error" style="display:none;padding:40px 20px;text-align:center">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--rd);border:2px solid var(--rm);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:pop .4s var(--spring) both">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="var(--r)" stroke-width="2.5" stroke-linecap="round"><path d="M5 5l18 18M23 5L5 23"/></svg>
+    </div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;color:var(--r)">Withdrawal failed</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.6" id="wd-err-msg">Something went wrong. Please try again.</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-p" id="wd-retry-btn" onclick="wdGoStep1()">Try Again</button>
+      <button class="btn btn-g" onclick="wdReset();closeAll()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AUDIT SHEET — v25 Store ═══ -->
+<div class="sheet" id="SH-audit" style="max-height:92vh">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl" style="color:var(--g)">⬡ Store v25 · Reactive</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+
+  <!-- Tab bar -->
+  <div style="display:flex;border-bottom:1px solid var(--rim);background:var(--bg)">
+    <div id="aud-tab-g"     onclick="audTab('g')"     class="tap" style="flex:1;padding:10px 4px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);color:var(--g);border-bottom:2px solid var(--g)">Store</div>
+    <div id="aud-tab-fn"    onclick="audTab('fn')"    class="tap" style="flex:1;padding:10px 4px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);color:var(--t3);border-bottom:2px solid transparent">Функции</div>
+    <div id="aud-tab-entry" onclick="audTab('entry')" class="tap" style="flex:1;padding:10px 4px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);color:var(--t3);border-bottom:2px solid transparent">Входы</div>
+    <div id="aud-tab-dep"   onclick="audTab('dep')"   class="tap" style="flex:1;padding:10px 4px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);color:var(--t3);border-bottom:2px solid transparent">Граф</div>
+  </div>
+
+  <div id="aud-body" style="overflow-y:auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:10px;max-height:calc(92vh - 110px)"></div>
+</div>
+
+<!-- ═══ TOOLCHAIN SHEET — Phase 1 ═══ -->
+<div class="sheet" id="SH-toolchain" style="max-height:92vh">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl" style="color:#38bdf8">⬡ Toolchain — Phase 1</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="overflow-y:auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:12px;max-height:calc(92vh - 90px)">
+
+    <!-- Hero card -->
+    <div style="background:rgba(0,60,100,.25);border:1.5px solid rgba(56,189,248,.2);border-radius:14px;padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#38bdf8" stroke-width="1.6"><path d="M2 4l4 4-4 4M8 12h6"/></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#f0f9ff">Toolchain: Vite + ESLint + Prettier</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px;font-family:var(--mono)">Без изменения UI — только сборщик и линтер. Нулевой регресс.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        <span class="tag" style="background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.25)">hot reload</span>
+        <span class="tag" style="background:rgba(0,217,126,.1);color:var(--g);border:1px solid var(--gm)">CI ready</span>
+        <span class="tag" style="background:rgba(245,197,24,.1);color:var(--y);border:1px solid var(--ym)">нулевой риск</span>
+      </div>
+    </div>
+
+    <!-- 3 detail cards -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+
+      <!-- Vite -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid #38bdf8">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#38bdf8">vite.config.js</div>
+          <span class="tag" style="background:rgba(56,189,248,.08);color:#38bdf8;border:1px solid rgba(56,189,248,.2);font-size:8px;flex-shrink:0">entry + legacy plugin</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Заменяет ручное подключение скриптов. Один HTML-entrypoint, tree-shaking, hot module replacement в dev-режиме.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// vite.config.js</span><br>
+          <span style="color:#38bdf8">export default</span> {<br>
+          &nbsp;&nbsp;build: { rollupOptions: {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;input: <span style="color:var(--y)">'src/main.js'</span><br>
+          &nbsp;&nbsp;}},<br>
+          &nbsp;&nbsp;plugins: [legacy()]<br>
+          }
+        </div>
+      </div>
+
+      <!-- ESLint -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid var(--r)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--r)">ESLint no-var rule</div>
+          <span class="tag t-r" style="font-size:8px;flex-shrink:0">запрет var, only let/const</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Все <code style="font-family:var(--mono);color:var(--y);font-size:11px">var</code> в коде станут ошибкой CI. Только <code style="font-family:var(--mono);color:var(--g);font-size:11px">let</code> и <code style="font-family:var(--mono);color:var(--g);font-size:11px">const</code> — никаких неожиданных hoisting-багов.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// .eslintrc</span><br>
+          { <span style="color:#38bdf8">"rules"</span>: {<br>
+          &nbsp;&nbsp;<span style="color:var(--y)">"no-var"</span>: <span style="color:var(--r)">"error"</span>,<br>
+          &nbsp;&nbsp;<span style="color:var(--y)">"prefer-const"</span>: <span style="color:var(--r)">"warn"</span><br>
+          }}
+        </div>
+      </div>
+
+      <!-- CI -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid var(--g)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--g)">CI: build + lint</div>
+          <span class="tag t-g" style="font-size:8px;flex-shrink:0">GitHub Actions / GitLab CI</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Каждый push проходит <code style="font-family:var(--mono);color:var(--y);font-size:11px">vite build</code> + <code style="font-family:var(--mono);color:var(--y);font-size:11px">eslint</code>. Merge-блок при ошибке. Prettier — автоформат при коммите через husky.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)"># .github/workflows/ci.yml</span><br>
+          <span style="color:#38bdf8">steps</span>:<br>
+          &nbsp;&nbsp;- <span style="color:var(--y)">run</span>: npm ci<br>
+          &nbsp;&nbsp;- <span style="color:var(--y)">run</span>: npm run lint<br>
+          &nbsp;&nbsp;- <span style="color:var(--y)">run</span>: npm run build
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Risk card -->
+    <div style="background:rgba(0,217,126,.04);border:1px solid var(--gm);border-radius:12px;padding:14px 16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--g);font-weight:700;letter-spacing:.1em;margin-bottom:8px">✓ ГАРАНТИИ</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.75">
+        · UI не меняется — только сборка<br>
+        · Никакого рефакторинга логики<br>
+        · Fallback: <code style="font-family:var(--mono);color:var(--y);font-size:11px">legacy()</code> плагин для старых браузеров<br>
+        · Prettier не трогает семантику — только форматирование
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ MODULES SHEET — Phase 2 ═══ -->
+<div class="sheet" id="SH-modules" style="max-height:92vh">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl" style="color:#a78bfa">⬡ JS-модули — Phase 2</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="overflow-y:auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:12px;max-height:calc(92vh - 90px)">
+
+    <!-- Hero card -->
+    <div style="background:rgba(60,20,100,.25);border:1.5px solid rgba(167,139,250,.2);border-radius:14px;padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#a78bfa" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#ede9fe">Убить <code style="font-family:var(--mono);color:#a78bfa">var G</code></div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px;font-family:var(--mono)">Каждый блок логики → отдельный .js модуль с явными экспортами</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        <span class="tag" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.25)">ES-модули</span>
+        <span class="tag" style="background:rgba(0,217,126,.1);color:var(--g);border:1px solid var(--gm)">тестируемо</span>
+        <span class="tag" style="background:rgba(232,25,44,.1);color:var(--r);border:1px solid var(--rm)">без глобалов</span>
+      </div>
+    </div>
+
+    <!-- Before / After -->
+    <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--rim);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)">До → После</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch">
+        <!-- Before -->
+        <div style="background:rgba(232,25,44,.08);border-right:1px solid var(--rim);padding:14px 14px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--r);font-family:var(--mono);margin-bottom:8px">ДО</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.9">
+            <span style="color:var(--r)">var</span> G = {};<br>
+            G.user = {…};<br>
+            G.modal = <span style="color:var(--t3)">function</span>() {…};<br>
+            G.bal = 250;<br>
+            <span style="color:var(--t3)">// всё в одном файле</span>
+          </div>
+        </div>
+        <!-- Arrow -->
+        <div style="display:flex;align-items:center;justify-content:center;padding:0 10px;color:var(--t3)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+        <!-- After -->
+        <div style="background:rgba(0,217,126,.06);padding:14px 14px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--g);font-family:var(--mono);margin-bottom:8px">ПОСЛЕ</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.9">
+            <span style="color:var(--g)">export const</span> getUser()<br>
+            <span style="color:var(--t3)">// user.js</span><br>
+            <span style="color:var(--g)">import</span> { openModal }<br>
+            <span style="color:var(--t3)">from</span> <span style="color:#38bdf8">'./modal'</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module breakdown -->
+    <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);padding:0 2px">Карта модулей</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+
+      <!-- user.js -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid #a78bfa">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#a78bfa">user.js</div>
+          <span class="tag" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2);font-size:8px;flex-shrink:0">G.uid · G.name</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Идентификация пользователя. <code style="font-family:var(--mono);color:var(--y);font-size:11px">G.uid</code> и <code style="font-family:var(--mono);color:var(--y);font-size:11px">G.name</code> становятся явными экспортами.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// user.js</span><br>
+          <span style="color:#a78bfa">export const</span> getUser = () =&gt; _user;<br>
+          <span style="color:#a78bfa">export const</span> setUser = (u) =&gt; { _user = u; };<br>
+          <span style="color:#a78bfa">export const</span> getUserId = () =&gt; _user?.uid;
+        </div>
+      </div>
+
+      <!-- balance.js -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid var(--g)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--g)">balance.js</div>
+          <span class="tag t-g" style="font-size:8px;flex-shrink:0">G.bal · G.pnl · G.txns</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Все финансовые операции — единственный модуль с доступом к балансу. Изолированный, тестируемый.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// balance.js</span><br>
+          <span style="color:var(--g)">export const</span> getBalance = () =&gt; _bal;<br>
+          <span style="color:var(--g)">export const</span> addFunds = (n) =&gt; { _bal += n; };<br>
+          <span style="color:var(--g)">export const</span> getTxns = () =&gt; [..._txns];
+        </div>
+      </div>
+
+      <!-- game.js -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid var(--y)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--y)">game.js</div>
+          <span class="tag t-y" style="font-size:8px;flex-shrink:0">G.mode · G.stake · G.myC · G.theirC</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Вся игровая логика изолирована. Раунды, ставки, выборы — только через явный API.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// game.js</span><br>
+          <span style="color:var(--y)">export const</span> startRound = (mode, stake) =&gt; {…};<br>
+          <span style="color:var(--y)">export const</span> makeChoice = (c) =&gt; { _myC = c; };<br>
+          <span style="color:var(--y)">export const</span> resolveRound = () =&gt; {…};
+        </div>
+      </div>
+
+      <!-- global.js -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid var(--r)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--r)">global.js</div>
+          <span class="tag t-r" style="font-size:8px;flex-shrink:0">G.global · setInterval</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Глобальные данные платформы (decisions/trust rate). Контролируемая синхронизация вместо мутации в setInterval.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// global.js</span><br>
+          <span style="color:var(--r)">export const</span> getStats = () =&gt; ({..._stats});<br>
+          <span style="color:var(--r)">export const</span> syncStats = async () =&gt; {…};<br>
+          <span style="color:var(--t3)">// больше нет G.global = ...</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Why it matters -->
+    <div style="background:rgba(0,217,126,.04);border:1px solid var(--gm);border-radius:12px;padding:14px 16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--g);font-weight:700;letter-spacing:.1em;margin-bottom:8px">✓ ПОЧЕМУ ЭТО ГЛАВНОЕ</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.8">
+        · Каждый модуль тестируется в изоляции<br>
+        · Нет скрытых зависимостей через <code style="font-family:var(--mono);color:var(--y);font-size:11px">G.*</code><br>
+        · Tree-shaking убирает неиспользуемое<br>
+        · Явный контракт: импорт = документация
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ STRANGLER FIG SHEET — Phase 3 ═══ -->
+<div class="sheet" id="SH-strangler" style="max-height:92vh">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl" style="color:#fb923c">⬡ Strangler Fig — Phase 3</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="overflow-y:auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:12px;max-height:calc(92vh - 90px)">
+
+    <!-- Hero -->
+    <div style="background:rgba(80,30,5,.3);border:1.5px solid rgba(251,146,60,.22);border-radius:14px;padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.28);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fb923c" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2c0 0-3 2-3 6s3 6 3 6"/><path d="M5 5h6M5 11h6"/></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fed7aa">Strangler Fig Pattern</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px;font-family:var(--mono)">Мартин Фаулер · не переписывать всё — заменять по одному острову</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.7;margin-top:4px">Как фиговое дерево-душитель обвивает старое дерево снаружи, пока то не исчезнет — React-компоненты обволакивают HTML-монолит, постепенно вытесняя его.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">
+        <span class="tag" style="background:rgba(251,146,60,.1);color:#fb923c;border:1px solid rgba(251,146,60,.25)">нулевой простой</span>
+        <span class="tag" style="background:rgba(0,217,126,.1);color:var(--g);border:1px solid var(--gm)">обратимо</span>
+        <span class="tag" style="background:rgba(245,197,24,.1);color:var(--y);border:1px solid var(--ym)">по одному блоку</span>
+      </div>
+    </div>
+
+    <!-- How it works diagram -->
+    <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);margin-bottom:12px">Принцип работы</div>
+      <!-- Timeline -->
+      <div style="display:flex;flex-direction:column;gap:0">
+        <!-- Step A -->
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(232,25,44,.12);border:1.5px solid var(--rm);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--r)">A</div>
+            <div style="width:1.5px;height:28px;background:var(--l3)"></div>
+          </div>
+          <div style="padding-top:4px;padding-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:3px">Выбрать самый изолированный блок</div>
+            <div style="font-size:11px;color:var(--t3);font-family:var(--mono)">Leaderboard row · Balance card · Result screen</div>
+          </div>
+        </div>
+        <!-- Step B -->
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(56,189,248,.1);border:1.5px solid rgba(56,189,248,.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:#38bdf8">B</div>
+            <div style="width:1.5px;height:28px;background:var(--l3)"></div>
+          </div>
+          <div style="padding-top:4px;padding-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:3px">Написать React-компонент рядом</div>
+            <div style="font-size:11px;color:var(--t3);font-family:var(--mono)">Монолит ещё работает — компонент готовится</div>
+          </div>
+        </div>
+        <!-- Step C -->
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(251,146,60,.1);border:1.5px solid rgba(251,146,60,.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:#fb923c">C</div>
+            <div style="width:1.5px;height:28px;background:var(--l3)"></div>
+          </div>
+          <div style="padding-top:4px;padding-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:3px">Вмонтировать через <code style="font-family:var(--mono);color:var(--y);font-size:11px">createRoot</code></div>
+            <div style="font-size:11px;color:var(--t3);font-family:var(--mono)">React рендерит в div-контейнер внутри HTML</div>
+          </div>
+        </div>
+        <!-- Step D -->
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(0,217,126,.08);border:1.5px solid var(--gm);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--g)">D</div>
+          </div>
+          <div style="padding-top:4px">
+            <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:3px">Удалить старый HTML-блок</div>
+            <div style="font-size:11px;color:var(--t3);font-family:var(--mono)">Монолит стал меньше. Повторить с следующим.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Migration order -->
+    <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);font-family:var(--mono);padding:0 2px">Порядок миграции — от изолированного к сложному</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+
+      <!-- Island 1 -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid var(--g)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:22px;height:22px;border-radius:6px;background:var(--gd);border:1px solid var(--gm);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--g);flex-shrink:0">1</div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--g)">LeaderboardRow.jsx</div>
+          <span class="tag t-g" style="font-size:8px;margin-left:auto;flex-shrink:0">начать здесь</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Чистая функция: принимает <code style="font-family:var(--mono);color:var(--y);font-size:11px">player</code>, рендерит строку. Нет side effects. Идеальный первый остров.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// LeaderboardRow.jsx</span><br>
+          <span style="color:var(--g)">export const</span> LeaderboardRow = ({ player, rank }) =&gt; (<br>
+          &nbsp;&nbsp;&lt;<span style="color:#38bdf8">div</span> className=<span style="color:var(--y)">"lb-row"</span>&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&lt;<span style="color:#38bdf8">span</span> className=<span style="color:var(--y)">"lb-rank"</span>&gt;{rank}&lt;/<span style="color:#38bdf8">span</span>&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&lt;<span style="color:#38bdf8">span</span>&gt;{player.name}&lt;/<span style="color:#38bdf8">span</span>&gt;<br>
+          &nbsp;&nbsp;&lt;/<span style="color:#38bdf8">div</span>&gt;<br>
+          );
+        </div>
+      </div>
+
+      <!-- Island 2 -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid var(--y)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:22px;height:22px;border-radius:6px;background:var(--yd);border:1px solid var(--ym);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--y);flex-shrink:0">2</div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--y)">BalanceCard.jsx</div>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Подписывается на <code style="font-family:var(--mono);color:var(--y);font-size:11px">balance.js</code> (Phase 2). Реактивное отображение баланса и P&L без прямого доступа к G.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// BalanceCard.jsx</span><br>
+          <span style="color:var(--g)">import</span> { getBalance } <span style="color:var(--g)">from</span> <span style="color:var(--y)">'./balance'</span>;<br>
+          <span style="color:var(--g)">export const</span> BalanceCard = () =&gt; {<br>
+          &nbsp;&nbsp;<span style="color:#38bdf8">const</span> [bal, setBal] = useState(getBalance());<br>
+          &nbsp;&nbsp;<span style="color:var(--t3)">// …useEffect sync</span><br>
+          };
+        </div>
+      </div>
+
+      <!-- Island 3 -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid #fb923c">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:22px;height:22px;border-radius:6px;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:#fb923c;flex-shrink:0">3</div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fb923c">ResultScreen.jsx</div>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Экран результата раунда — самодостаточный, получает данные из <code style="font-family:var(--mono);color:var(--y);font-size:11px">game.js</code>. Заменяет сложный HTML-шаблон.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// main.js — монтируем остров</span><br>
+          <span style="color:var(--g)">import</span> { createRoot } <span style="color:var(--g)">from</span> <span style="color:var(--y)">'react-dom/client'</span>;<br>
+          <span style="color:var(--g)">import</span> { ResultScreen } <span style="color:var(--g)">from</span> <span style="color:var(--y)">'./ResultScreen'</span>;<br>
+          createRoot($(<span style="color:var(--y)">'result-mount'</span>))<br>
+          &nbsp;&nbsp;.render(&lt;<span style="color:#38bdf8">ResultScreen</span> /&gt;);
+        </div>
+      </div>
+
+      <!-- Island 4 -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid var(--r)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:22px;height:22px;border-radius:6px;background:var(--rd);border:1px solid var(--rm);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--r);flex-shrink:0">4</div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--r)">App.jsx</div>
+          <span class="tag t-r" style="font-size:8px;margin-left:auto;flex-shrink:0">финал</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65">Когда все острова заменены — монолитный HTML сводится к одному <code style="font-family:var(--mono);color:var(--y);font-size:11px">&lt;div id="root"&gt;</code>. Strangler fig завершён.</div>
+      </div>
+
+    </div>
+
+    <!-- Rule card -->
+    <div style="background:rgba(251,146,60,.04);border:1px solid rgba(251,146,60,.2);border-radius:12px;padding:14px 16px">
+      <div style="font-family:var(--mono);font-size:10px;color:#fb923c;font-weight:700;letter-spacing:.1em;margin-bottom:8px">⬡ ПРАВИЛО ФАУЛЕРА</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.8">
+        · Никогда не трогать больше одного «острова» за раз<br>
+        · Старый код остаётся рабочим до момента удаления<br>
+        · Если компонент сложнее оригинала — стоп, пересмотреть<br>
+        · Feature flag на каждый остров: можно откатить за секунду
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="sheet" id="SH-settings">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl">Settings</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="padding:16px 20px 20px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="background:var(--l1);border:1px solid var(--rim);border-radius:12px;overflow:hidden">
+        <div class="row" style="cursor:default"><div style="flex:1"><div style="font-size:15px;font-weight:600">Username</div><div style="font-size:12px;color:var(--t3);margin-top:2px" id="st-name">Player</div></div></div>
+        <div class="row" style="cursor:default"><div style="flex:1"><div style="font-size:15px;font-weight:600">Mode</div><div style="font-size:12px;color:var(--y)">Demo · No real money</div></div></div>
+        <div class="row" style="cursor:default;border-bottom:none">
+          <div style="flex:1"><div style="font-size:15px;font-weight:600">2FA</div><div style="font-size:12px;color:var(--g)">Enabled</div></div>
+          <div style="width:46px;height:26px;border-radius:13px;background:var(--g);position:relative;flex-shrink:0"><div style="width:22px;height:22px;border-radius:11px;background:#000;position:absolute;top:2px;right:2px"></div></div>
+        </div>
+      </div>
+      <div style="background:var(--l1);border:1px solid var(--rim);border-radius:12px;overflow:hidden">
+        <div class="row tappable" onclick="goS('S-waitlist')">
+          <div style="flex:1"><div style="font-size:15px;font-weight:600;color:var(--t2)">Real Money Mode</div><div style="font-size:12px;color:var(--t3)">Join waitlist</div></div>
+          <span class="tag t-m">Soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Limits -->
+<div class="sheet" id="SH-limits">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl">Demo Settings</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="padding:20px">
+    <div style="background:var(--l1);border:1px solid var(--rim);border-radius:12px;overflow:hidden;margin-bottom:16px">
+      <div class="row" style="cursor:default"><div style="flex:1;font-size:14px;font-weight:600">Mode</div><span class="demo-badge">Demo</span></div>
+      <div class="row" style="cursor:default;border-bottom:none"><div style="flex:1;font-size:14px;font-weight:600">Starting Balance</div><span style="font-family:var(--mono);font-weight:700">$250</span></div>
+    </div>
+    <button class="btn btn-g" onclick="resetDemo()">Reset Demo Balance</button>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Balance -->
+<div class="modal" id="M-balance">
+  <div class="mo-hdr">
+    <button class="ico-btn" onclick="closeM('M-balance')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div class="mo-ttl" style="flex:1">Balance</div>
+    <button onclick="closeM('M-balance');goS('S-waitlist')" style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);background:var(--l1);border:1px solid var(--rim2);padding:8px 14px;cursor:pointer;border-radius:8px;font-family:var(--sans)">Real Money →</button>
+  </div>
+  <div style="padding:36px 24px;text-align:center;border-bottom:1px solid var(--rim)">
+    <div class="lbl" style="margin-bottom:10px">Available Balance</div>
+    <div style="display:flex;align-items:flex-start;justify-content:center;gap:4px">
+      <span style="font-size:28px;font-weight:700;color:var(--t3);margin-top:4px;font-family:var(--mono)">$</span>
+      <span style="font-size:68px;font-weight:700;letter-spacing:-.06em;line-height:.9;font-family:var(--mono)" id="mb-bal">250.00</span>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <span class="tag t-m">Demo Balance</span>
+      <span id="mb-pnl" class="tag t-g">— P&L</span>
+    </div>
+  </div>
+  <div style="padding:24px 20px">
+    <div class="lbl" style="margin-bottom:14px">Transaction History</div>
+    <div id="mb-hist" style="background:var(--l1);border-radius:12px;overflow:hidden"><div style="padding:24px;font-size:14px;color:var(--t3);text-align:center;font-family:var(--mono)">No transactions yet</div></div>
+  </div>
+</div>
+
+<!-- History -->
+<div class="modal" id="M-today">
+  <div class="modal-hdr">
+    <button class="ico-btn" onclick="closeM('M-today')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div class="modal-title">Today on Verdict</div>
+    <div style="width:36px"></div>
+  </div>
+
+  <!-- Live indicator -->
+  <div style="padding:12px 20px 0;display:flex;align-items:center;gap:8px">
+    <span style="width:7px;height:7px;border-radius:50%;background:var(--g);display:inline-block;animation:blink 1.4s ease infinite"></span>
+    <span style="font-size:11px;color:var(--g);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;font-weight:700">Live</span>
+  </div>
+
+  <!-- Big stats -->
+  <div style="padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:16px;text-align:center">
+      <div id="td-rounds" style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--t1)">12,483</div>
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-top:4px">Rounds</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:16px;text-align:center">
+      <div id="td-volume" style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--t1)">$148k</div>
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-top:4px">Volume</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:16px;text-align:center">
+      <div id="td-trust" style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--g)">68%</div>
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-top:4px">Chose Trust</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:16px;text-align:center">
+      <div id="td-players" style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--t1)">1,204</div>
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-top:4px">Players</div>
+    </div>
+  </div>
+
+  <!-- Trust bar -->
+  <div style="padding:0 20px 16px">
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:16px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--g);font-family:var(--mono);font-weight:700">TRUST <span id="td-trust-pct">68%</span></span>
+        <span style="font-size:12px;color:var(--r);font-family:var(--mono);font-weight:700">TAKE <span id="td-take-pct">32%</span></span>
+      </div>
+      <div style="height:8px;background:var(--rd);border-radius:4px;overflow:hidden">
+        <div id="td-trust-bar" style="height:100%;width:68%;background:var(--g);border-radius:4px;transition:width .4s"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top stake -->
+  <div style="padding:0 20px 20px">
+    <div style="background:var(--bg2);border:1px solid var(--rim);border-radius:14px;padding:16px">
+      <div style="font-size:11px;color:var(--t3);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Most popular stake</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:22px;font-weight:700;font-family:var(--mono)" id="td-top-stake">$1.00</span>
+        <span style="font-size:12px;color:var(--t3);font-family:var(--mono)" id="td-top-stake-pct">43% of rounds</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="M-history">
+  <div class="mo-hdr">
+    <button class="ico-btn" onclick="closeM('M-history')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div class="mo-ttl">Round History</div>
+  </div>
+  <div style="padding:20px">
+    <div id="mh-list" style="background:var(--l1);border-radius:12px;overflow:hidden">
+      <div style="padding:32px;text-align:center;font-size:14px;color:var(--t3);line-height:1.7;font-family:var(--mono)">No rounds.<br><span onclick="closeM('M-history');goS('S-new')" style="color:var(--r);cursor:pointer">Play now →</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="modal" id="M-stats">
+  <div class="mo-hdr">
+    <button class="ico-btn" onclick="closeM('M-stats')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div class="mo-ttl">Statistics</div>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--l1);border-radius:14px;padding:20px">
+        <div class="lbl" style="margin-bottom:10px">Trust Rate</div>
+        <div id="st-tr" style="font-size:36px;font-weight:700;letter-spacing:-.05em;color:var(--g);font-family:var(--mono)">—</div>
+        <div style="height:2px;background:var(--l3);margin-top:10px;border-radius:1px"><div id="st-trb" style="height:100%;width:0%;background:var(--g);transition:width .8s var(--ease);border-radius:1px"></div></div>
+      </div>
+      <div style="background:var(--l1);border-radius:14px;padding:20px">
+        <div class="lbl" style="margin-bottom:10px">Win Rate</div>
+        <div id="st-wr" style="font-size:36px;font-weight:700;letter-spacing:-.05em;font-family:var(--mono)">—</div>
+        <div style="height:2px;background:var(--l3);margin-top:10px;border-radius:1px"><div id="st-wrb" style="height:100%;width:0%;background:var(--r);transition:width .8s var(--ease);border-radius:1px"></div></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div style="background:var(--l1);border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:26px;font-weight:700;letter-spacing:-.05em;font-family:var(--mono)" id="st-tot">0</div>
+        <div class="lbl" style="margin-top:5px">Rounds</div>
+      </div>
+      <div style="background:var(--l1);border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:26px;font-weight:700;letter-spacing:-.05em;color:var(--g);font-family:var(--mono)" id="st-wn">0</div>
+        <div class="lbl" style="margin-top:5px">Wins</div>
+      </div>
+      <div style="background:var(--l1);border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:20px;font-weight:700;letter-spacing:-.04em;color:var(--y);font-family:var(--mono)">$<span id="st-bal">250</span></div>
+        <div class="lbl" style="margin-top:5px">Balance</div>
+      </div>
+    </div>
+    <div style="background:var(--l1);border-radius:14px;padding:20px">
+      <div class="lbl" style="margin-bottom:14px">P&L</div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:12px"><span style="color:var(--t2)">Total staked (demo)</span><span style="font-family:var(--mono);font-weight:700">$<span id="st-wag">0.00</span></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:12px"><span style="color:var(--t2)">Platform fees (5%)</span><span style="font-family:var(--mono);font-weight:700;color:var(--t3)">-$<span id="st-rake">0.00</span></span></div>
+      <div style="height:1px;background:var(--l3)"></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;margin-top:12px"><span style="color:var(--t2)">Net P&L</span><span style="font-family:var(--mono);font-weight:700" id="st-pnl">$0.00</span></div>
+    </div>
+    <div style="background:var(--l1);border-radius:14px;padding:20px">
+      <div class="lbl" style="margin-bottom:14px">Global</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--t2)">Global trust rate</span><span style="color:var(--g);font-weight:700;font-family:var(--mono)">68%</span></div>
+        <div style="height:1px;background:var(--l3)"></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--t2)">Decisions today</span><span style="font-family:var(--mono);font-weight:700" id="st-gl">12,483</span></div>
+        <div style="height:1px;background:var(--l3)"></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--t2)">Volume today</span><span style="font-family:var(--mono);font-weight:700">$148,220</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications -->
+<div class="modal" id="M-notif">
+  <div class="mo-hdr">
+    <button class="ico-btn" onclick="closeM('M-notif')"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4L6 9l5 5"/></svg></button>
+    <div class="mo-ttl">Notifications</div>
+  </div>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:8px">
+    <div style="background:var(--l1);border-radius:14px;overflow:hidden">
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:18px;border-bottom:1px solid var(--rim)">
+        <div style="width:40px;height:40px;border-radius:10px;border:1px solid var(--gm);background:var(--gd);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--g)" stroke-width="1.8"><path d="M3 8l4 4 6-6"/></svg></div>
+        <div><div style="font-size:15px;font-weight:700;margin-bottom:5px">Account Verified</div><div style="font-size:13px;color:var(--t2);line-height:1.6">Your account is set up. Demo mode is ready to play.</div><div class="lbl" style="margin-top:6px">Now</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:18px">
+        <div style="width:40px;height:40px;border-radius:10px;border:1px solid var(--rim2);background:var(--l2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--t2)" stroke-width="1.6"><polygon points="2,2 14,8 2,14"/></svg></div>
+        <div><div style="font-size:15px;font-weight:700;margin-bottom:5px">12,483 rounds today</div><div style="font-size:13px;color:var(--t2);line-height:1.6">Volume $148,220. 68% chose Trust.</div><div class="lbl" style="margin-top:6px;color:var(--g)">Live</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STATE MANAGEMENT SHEET — Phase 4 ═══ -->
+<div class="sheet" id="SH-statemgmt" style="max-height:92vh">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl" style="color:#34d399">⬡ State Management — Phase 4</span>
+    <button class="sh-close" onclick="closeAll()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div style="overflow-y:auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:12px;max-height:calc(92vh - 90px)">
+
+    <!-- Hero card -->
+    <div style="background:rgba(5,60,40,.3);border:1.5px solid rgba(52,211,153,.22);border-radius:14px;padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:8px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.28);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#34d399" stroke-width="1.5"><ellipse cx="8" cy="5" rx="5" ry="2.5"/><path d="M3 5v3c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V5"/><path d="M3 8v3c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V8"/></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#d1fae5">State Management: Zustand или Jotai</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px;font-family:var(--mono)">Атомарный стейт вместо G-объекта. Devtools. Time-travel debug.</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--t2);line-height:1.7;margin-top:4px">Когда компонентов уже несколько, <code style="font-family:var(--mono);color:var(--y);font-size:11px">var G</code> как шина данных заменяется на Zustand (минимальный boilerplate) или Jotai (атомарная реактивность). Server state — отдельно, через React Query.</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">
+        <span class="tag" style="background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.25)">Zustand</span>
+        <span class="tag" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.25)">Jotai</span>
+        <span class="tag" style="background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.25)">React Query</span>
+        <span class="tag" style="background:rgba(245,197,24,.1);color:var(--y);border:1px solid var(--ym)">Devtools</span>
+      </div>
+    </div>
+
+    <!-- 3 tool cards -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+
+      <!-- Zustand -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid #34d399">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#34d399">Zustand</div>
+          <span class="tag" style="background:rgba(52,211,153,.08);color:#34d399;border:1px solid rgba(52,211,153,.2);font-size:8px;flex-shrink:0">минимальный boilerplate</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Один <code style="font-family:var(--mono);color:var(--y);font-size:11px">create()</code> вызов вместо <code style="font-family:var(--mono);color:var(--y);font-size:11px">var G</code>. Компоненты подписываются на нужные поля — перерисовка только при их изменении. Встроенные Devtools и middleware для persist.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// store/gameStore.js</span><br>
+          <span style="color:#34d399">import</span> { create } <span style="color:#34d399">from</span> <span style="color:var(--y)">'zustand'</span>;<br><br>
+          <span style="color:#34d399">export const</span> useGameStore = create((set) =&gt; ({<br>
+          &nbsp;&nbsp;bal: 250, stake: 25, rounds: 0,<br>
+          &nbsp;&nbsp;addFunds: (n) =&gt; set(s =&gt; ({ bal: s.bal + n })),<br>
+          &nbsp;&nbsp;setStake: (n) =&gt; set({ stake: n }),<br>
+          }));
+        </div>
+      </div>
+
+      <!-- Jotai -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid #a78bfa">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#a78bfa">Jotai</div>
+          <span class="tag" style="background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2);font-size:8px;flex-shrink:0">атомы, реактивно</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Каждое поле — отдельный атом. Компонент подписывается только на то, что ему нужно. Производные атомы (derived) вычисляются автоматически — идеально для <code style="font-family:var(--mono);color:var(--y);font-size:11px">trustRate</code>, <code style="font-family:var(--mono);color:var(--y);font-size:11px">pnl</code>.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// atoms/game.js</span><br>
+          <span style="color:#a78bfa">import</span> { atom } <span style="color:#a78bfa">from</span> <span style="color:var(--y)">'jotai'</span>;<br><br>
+          <span style="color:#a78bfa">export const</span> balAtom = atom(250);<br>
+          <span style="color:#a78bfa">export const</span> roundsAtom = atom(0);<br>
+          <span style="color:#a78bfa">export const</span> trustsAtom = atom(0);<br>
+          <span style="color:var(--t3)">// derived — вычисляется автоматически</span><br>
+          <span style="color:#a78bfa">export const</span> trustRateAtom = atom(<br>
+          &nbsp;&nbsp;(get) =&gt; get(roundsAtom)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;? Math.round(get(trustsAtom)/get(roundsAtom)*100)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;: 0<br>
+          );
+        </div>
+      </div>
+
+      <!-- React Query -->
+      <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;padding:14px 16px;border-left:2.5px solid #38bdf8">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#38bdf8">React Query</div>
+          <span class="tag" style="background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.2);font-size:8px;flex-shrink:0">server state отдельно</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:10px">Server state (глобальная статистика, лидерборд) — не в Zustand/Jotai, а в React Query. Автокэш, фоновый рефетч, stale-while-revalidate. Заменяет ручной <code style="font-family:var(--mono);color:var(--y);font-size:11px">setInterval</code> для <code style="font-family:var(--mono);color:var(--y);font-size:11px">G.global</code>.</div>
+        <div style="background:var(--bg);border:1px solid var(--rim);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.8">
+          <span style="color:var(--t3)">// вместо setInterval каждые 3с</span><br>
+          <span style="color:#38bdf8">const</span> { data } = useQuery({<br>
+          &nbsp;&nbsp;queryKey: [<span style="color:var(--y)">'globalStats'</span>],<br>
+          &nbsp;&nbsp;queryFn: fetchGlobalStats,<br>
+          &nbsp;&nbsp;refetchInterval: <span style="color:var(--g)">3000</span>,<br>
+          &nbsp;&nbsp;staleTime: <span style="color:var(--g)">1000</span>,<br>
+          });
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Before / After comparison -->
+    <div style="background:var(--l1);border:1px solid var(--rim2);border-radius:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--rim);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);font-family:var(--mono)">До → После</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch">
+        <!-- Before -->
+        <div style="background:rgba(232,25,44,.08);border-right:1px solid var(--rim);padding:14px 14px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--r);font-family:var(--mono);margin-bottom:8px">ДО</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.9">
+            <span style="color:var(--r)">var</span> G = { bal: 250 };<br>
+            G.bal += n;<br>
+            <span style="color:var(--t3)">// все читают G напрямую</span><br>
+            <span style="color:var(--t3)">// нет реактивности</span><br>
+            <span style="color:var(--t3)">// ручной updateAll()</span>
+          </div>
+        </div>
+        <!-- Arrow -->
+        <div style="display:flex;align-items:center;justify-content:center;padding:0 10px;color:var(--t3)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+        <!-- After -->
+        <div style="background:rgba(52,211,153,.06);padding:14px 14px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.12em;color:#34d399;font-family:var(--mono);margin-bottom:8px">ПОСЛЕ</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.9">
+            <span style="color:#34d399">const</span> bal = useGameStore(<br>
+            &nbsp;&nbsp;s =&gt; s.bal<br>
+            );<br>
+            <span style="color:var(--t3)">// авторендер при изменении</span><br>
+            <span style="color:var(--t3)">// Devtools + persist</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Devtools card -->
+    <div style="background:rgba(245,197,24,.04);border:1px solid var(--ym);border-radius:12px;padding:14px 16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--y);font-weight:700;letter-spacing:.1em;margin-bottom:8px">⚡ DEVTOOLS + TIME-TRAVEL</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.8">
+        · Zustand DevTools — состояние в Redux DevTools прямо в браузере<br>
+        · Jotai DevTools — атомы, их значения и зависимости в реальном времени<br>
+        · <code style="font-family:var(--mono);color:var(--y);font-size:11px">temporal middleware</code> — time-travel: перемотка состояния назад<br>
+        · <code style="font-family:var(--mono);color:var(--y);font-size:11px">persist middleware</code> — автосохранение в localStorage без ручного кода
+      </div>
+    </div>
+
+    <!-- Rule card -->
+    <div style="background:rgba(52,211,153,.04);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:14px 16px">
+      <div style="font-family:var(--mono);font-size:10px;color:#34d399;font-weight:700;letter-spacing:.1em;margin-bottom:8px">✓ КОГДА ВЫБИРАТЬ</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.8">
+        · <span style="color:#34d399;font-weight:600">Zustand</span> — если нужен простой store с action-методами (как Redux, но без шаблонного кода)<br>
+        · <span style="color:#a78bfa;font-weight:600">Jotai</span> — если стейт гранулярный и производные значения важны (trust rate, pnl вычисляются автоматически)<br>
+        · <span style="color:#38bdf8;font-weight:600">React Query</span> — для всего, что приходит с сервера: никогда не смешивать с клиентским стейтом
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ TESTING + DEPLOY SHEET — Phase 5 ═══ -->
+<div class="sheet" id="SH-testing" style="max-height:92vh">
+  <div class="sh-pill"></div>
+  <div class="sh-hdr">
+    <span class="sh-ttl" style="color:#63b3ed">⬡ Тесты + деплой — Phase 5</span>
+    <button class="sh-close" onclick="closeSh('SH-testing')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 2l10 10M12 2L2 12"/></svg>
+    </button>
+  </div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+
+    <!-- Why card -->
+    <div style="background:rgba(99,179,237,.06);border:1px solid rgba(99,179,237,.18);border-radius:12px;padding:14px 16px">
+      <div style="font-family:var(--mono);font-size:10px;color:#63b3ed;font-weight:700;letter-spacing:.1em;margin-bottom:8px">⚡ ЗАЧЕМ СЕЙЧАС</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.8">
+        Сейчас в проекте нет ни одного теста и нет preview-деплоя на PR. Любая правка — слепой полёт: сломал ли ты баланс, matchmaking или UI — узнаёшь только руками. Phase 5 закрывает этот пробел: <span style="color:#63b3ed;font-weight:600">Unit → Integration → E2E</span> и автоматический preview на каждый пул-реквест.
+      </div>
+    </div>
+
+    <!-- Pyramid header -->
+    <div style="font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;padding:4px 2px">Пирамида тестов</div>
+
+    <!-- Vitest -->
+    <div style="background:var(--l1);border-radius:12px;padding:14px 16px;border-left:3px solid var(--g)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--g)">Vitest</div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--t3);background:var(--l2);border-radius:4px;padding:2px 6px">unit · быстро</span>
+      </div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.75;margin-bottom:8px">
+        Тестирует чистую логику без DOM. Запускается за &lt;1 с. Идеально для бизнес-правил Verdict.
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:#a3e635;line-height:1.9">
+        <span style="color:var(--t3)">// fmt, rake, resolve</span><br>
+        test(<span style="color:#fbbf24">'rake 5% only on win'</span>, () =&gt; {<br>
+        &nbsp;&nbsp;expect(calcRake(100, <span style="color:#63b3ed">'win'</span>)).toBe(<span style="color:var(--g)">5</span>)<br>
+        &nbsp;&nbsp;expect(calcRake(100, <span style="color:#63b3ed">'loss'</span>)).toBe(<span style="color:var(--g)">0</span>)<br>
+        })
+      </div>
+    </div>
+
+    <!-- Testing Library -->
+    <div style="background:var(--l1);border-radius:12px;padding:14px 16px;border-left:3px solid #63b3ed">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#63b3ed">Testing Library</div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--t3);background:var(--l2);border-radius:4px;padding:2px 6px">component integration</span>
+      </div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.75;margin-bottom:8px">
+        Монтирует React-компонент (после Phase 3) и кликает кнопки как пользователь. Никаких моков внутренностей — только видимое поведение.
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:#a3e635;line-height:1.9">
+        test(<span style="color:#fbbf24">'Trust btn updates balance'</span>, () =&gt; {<br>
+        &nbsp;&nbsp;render(<span style="color:#63b3ed">&lt;DecisionCard /&gt;</span>)<br>
+        &nbsp;&nbsp;fireEvent.click(screen.getByText(<span style="color:#fbbf24">'Trust'</span>))<br>
+        &nbsp;&nbsp;expect(screen.getByTestId(<span style="color:#fbbf24">'balance'</span>))<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.toHaveTextContent(<span style="color:#fbbf24">'$274'</span>)<br>
+        })
+      </div>
+    </div>
+
+    <!-- Playwright -->
+    <div style="background:var(--l1);border-radius:12px;padding:14px 16px;border-left:3px solid #a78bfa">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#a78bfa">Playwright</div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--t3);background:var(--l2);border-radius:4px;padding:2px 6px">E2E · реальный браузер</span>
+      </div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.75;margin-bottom:8px">
+        Открывает Chromium/Firefox/Safari, проходит полный раунд от входа до результата. Ловит то, что unit-тесты пропускают: routing, анимации, BroadcastChannel.
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:#a3e635;line-height:1.9">
+        test(<span style="color:#fbbf24">'full round demo mode'</span>, async ({ page }) =&gt; {<br>
+        &nbsp;&nbsp;await page.goto(<span style="color:#fbbf24">'/'</span>)<br>
+        &nbsp;&nbsp;await page.click(<span style="color:#fbbf24">'text=Demo'</span>)<br>
+        &nbsp;&nbsp;await page.click(<span style="color:#fbbf24">'text=Trust'</span>)<br>
+        &nbsp;&nbsp;await expect(page.locator(<span style="color:#fbbf24">'.result'</span>))<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;.toBeVisible()<br>
+        })
+      </div>
+    </div>
+
+    <!-- Deploy section -->
+    <div style="font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;padding:4px 2px">Preview деплой</div>
+
+    <!-- Vercel/Netlify -->
+    <div style="background:var(--l1);border-radius:12px;padding:14px 16px;border-left:3px solid var(--y)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--y)">Vercel / Netlify Preview</div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--t3);background:var(--l2);border-radius:4px;padding:2px 6px">PR → URL за 60 с</span>
+      </div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.75">
+        Каждый PR автоматически получает уникальный URL вида <code style="font-family:var(--mono);color:var(--y);font-size:11px">verdict-pr-42.vercel.app</code>. Ревьюер открывает — и сразу живое приложение, без локального запуска. Это «нормальное деплоирование», которого сейчас нет.
+      </div>
+    </div>
+
+    <!-- Docker / Feature flags -->
+    <div style="background:var(--l1);border-radius:12px;padding:14px 16px;border-left:3px solid var(--t3)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--t2)">Docker + feature flags</div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--t3);background:var(--l2);border-radius:4px;padding:2px 6px">production gate</span>
+      </div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.75">
+        Docker фиксирует окружение между preview и prod. Feature flags (LaunchDarkly / own impl) позволяют выкатывать real-money логику на 1% пользователей, не разворачивая отдельный деплой.
+      </div>
+    </div>
+
+    <!-- CI pipeline -->
+    <div style="background:rgba(99,179,237,.04);border:1px solid rgba(99,179,237,.15);border-radius:12px;padding:14px 16px">
+      <div style="font-family:var(--mono);font-size:10px;color:#63b3ed;font-weight:700;letter-spacing:.1em;margin-bottom:10px">CI PIPELINE (GitHub Actions)</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:22px;height:22px;border-radius:6px;background:var(--gd);border:1px solid var(--gm);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--g);flex-shrink:0">1</div>
+          <div style="font-size:12px;color:var(--t2)"><code style="font-family:var(--mono);color:var(--g);font-size:11px">vitest run</code> — unit-тесты, &lt;10 с</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:22px;height:22px;border-radius:6px;background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.25);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:#63b3ed;flex-shrink:0">2</div>
+          <div style="font-size:12px;color:var(--t2)"><code style="font-family:var(--mono);color:#63b3ed;font-size:11px">testing-library</code> — компоненты, ~30 с</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:22px;height:22px;border-radius:6px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:#a78bfa;flex-shrink:0">3</div>
+          <div style="font-size:12px;color:var(--t2)"><code style="font-family:var(--mono);color:#a78bfa;font-size:11px">playwright</code> — E2E, ~2 мин</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:22px;height:22px;border-radius:6px;background:var(--yd);border:1px solid var(--ym);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--y);flex-shrink:0">4</div>
+          <div style="font-size:12px;color:var(--t2)"><code style="font-family:var(--mono);color:var(--y);font-size:11px">vercel deploy</code> — preview URL в комментарии PR</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Зависимости -->
+    <div style="background:var(--rd);border:1px solid var(--rm);border-radius:12px;padding:14px 16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--r);font-weight:700;letter-spacing:.1em;margin-bottom:8px">⚠ ЗАВИСИМОСТИ</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.8">
+        · Testing Library требует React-компонентов → нужна Phase 3 (Strangler Fig)<br>
+        · Vitest и Playwright можно ставить уже сейчас на голый HTML<br>
+        · Preview деплой не зависит от фреймворка — работает с Vite из Phase 1
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/screens/result-mount.jsx"></script>
+  <script type="module" src="/src/screens/leaderboard-mount.jsx"></script>
+</body>
+</html>
