@@ -74,6 +74,18 @@ function safeSwitchTab(tab) {
   _origSwitchTab(tab);
 }
 
+// ── DEMO GUARD ───────────────────────────────────────────────
+const _origSwitchTab = switchTab;
+function safeSwitchTab(tab) {
+  if (G.mode === 'demo') {
+    G.mode = 'real';
+    G.bal  = G.realBal || 0;
+    G.hist = []; G.txns = []; G.pnl = 0;
+    updateAll();
+  }
+  _origSwitchTab(tab);
+}
+
 const _origGoS = goS;
 function safeGoS(id) {
   if (id === 'S-home' && G.mode === 'demo') {
@@ -349,6 +361,14 @@ async function doLogin() {
   G.userId  = user.id;
   enterApp();
 }
+function goSplash() {
+  // Возвращаемся на сплэш экран
+  const auth = document.getElementById('S-auth');
+  const splash = document.getElementById('S-splash');
+  if (auth) { auth.style.display = 'none'; auth.style.zIndex = '-1'; }
+  if (splash) { splash.style.display = ''; splash.style.zIndex = ''; splash.classList.remove('out'); }
+}
+
 function enterApp() {
   const s = document.getElementById('S-auth');
   s.style.transition = 'opacity .35s ease,transform .35s var(--ease)'; s.style.opacity = '0'; s.style.transform = 'scale(.96)';
@@ -465,7 +485,7 @@ Object.assign(window, {
   applyMode, startDemo, startReal, startTraining, resetDemo,
   // auth
   authToggle, regStep, regNext1, regNext2, regBack,
-  toggleCheck, regSubmit, doLogin, enterApp, togglePwd,
+  toggleCheck, regSubmit, doLogin, enterApp, togglePwd, goSplash,
   splashGoAuth, showErr, clearErr, rerollNick,
   // leaderboard
   lbSetTab, renderLeaderboard, lbUpsert,
