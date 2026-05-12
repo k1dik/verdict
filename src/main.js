@@ -74,6 +74,18 @@ function safeSwitchTab(tab) {
   _origSwitchTab(tab);
 }
 
+// ── DEMO GUARD ───────────────────────────────────────────────
+const _origSwitchTab = switchTab;
+function safeSwitchTab(tab) {
+  if (G.mode === 'demo') {
+    G.mode = 'real';
+    G.bal  = G.realBal || 0;
+    G.hist = []; G.txns = []; G.pnl = 0;
+    updateAll();
+  }
+  _origSwitchTab(tab);
+}
+
 const _origGoS = goS;
 function safeGoS(id) {
   if (id === 'S-home' && G.mode === 'demo') {
@@ -83,6 +95,56 @@ function safeGoS(id) {
     updateAll();
   }
   _origGoS(id);
+}
+
+// ── AVATAR SYSTEM ────────────────────────────────────────────
+
+const AVATARS = [
+  { id:'0',  bg:'#1a1a2e', content:'⚡' },
+  { id:'1',  bg:'#1a2e1a', content:'♟' },
+  { id:'2',  bg:'#2e1a1a', content:'👁' },
+  { id:'3',  bg:'#1a1a1a', content:'◆' },
+  { id:'4',  bg:'#2e2a1a', content:'🎯' },
+  { id:'5',  bg:'#1a2a2e', content:'🔺' },
+  { id:'6',  bg:'#2e1a2e', content:'★' },
+  { id:'7',  bg:'#1e1e1e', content:'⬡' },
+  { id:'8',  bg:'#2e2e1a', content:'✦' },
+  { id:'9',  bg:'#1a2e2e', content:'⊕' },
+  { id:'10', bg:'#2a1a2e', content:'⚔' },
+  { id:'11', bg:'#2e1e1a', content:'∞' },
+];
+
+function getAvatar(id) {
+  return AVATARS.find(a => a.id === String(id)) || AVATARS[0];
+}
+
+function renderAvatar(id) {
+  const av = getAvatar(id);
+  const el = document.getElementById('pf-av');
+  const content = document.getElementById('pf-av-content');
+  if (el) el.style.background = av.bg;
+  if (content) { content.textContent = av.content; content.style.fontSize = '28px'; }
+}
+
+function openAvatarPicker() {
+  const grid = document.getElementById('avatar-grid');
+  if (!grid) return;
+  grid.innerHTML = AVATARS.map(av => `
+    <div onclick="pickAvatar('${av.id}')" style="
+      width:100%;aspect-ratio:1;border-radius:16px;background:${av.bg};
+      display:flex;align-items:center;justify-content:center;font-size:28px;
+      cursor:pointer;border:2px solid ${av.id === G.avatar ? 'var(--r)' : 'transparent'};
+      transition:border .2s
+    ">${av.content}</div>
+  `).join('');
+  openSh('SH-avatar');
+}
+
+function pickAvatar(id) {
+  G.avatar = id;
+  renderAvatar(id);
+  localStorage.setItem('verdict_avatar', id);
+  closeAll();
 }
 
 // ── GAME FUNCTIONS ───────────────────────────────────────────
@@ -358,6 +420,9 @@ function goSplash() {
 }
 
 function enterApp() {
+  // Загружаем сохранённую аватарку
+  const savedAvatar = localStorage.getItem('verdict_avatar');
+  if (savedAvatar) { G.avatar = savedAvatar; setTimeout(() => renderAvatar(savedAvatar), 100); }
   const s = document.getElementById('S-auth');
   s.style.transition = 'opacity .35s ease,transform .35s var(--ease)'; s.style.opacity = '0'; s.style.transform = 'scale(.96)';
   setTimeout(() => { s.style.display = 'none'; s.style.zIndex = '-1'; closeAll(); switchTab('home'); setTimeout(showChallengerBanner, 800); }, 350);
@@ -474,6 +539,7 @@ Object.assign(window, {
   // auth
   authToggle, regStep, regNext1, regNext2, regBack,
   toggleCheck, regSubmit, doLogin, enterApp, togglePwd, goSplash,
+  openAvatarPicker, pickAvatar,
   splashGoAuth, showErr, clearErr, rerollNick,
   // leaderboard
   lbSetTab, renderLeaderboard, lbUpsert,

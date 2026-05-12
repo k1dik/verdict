@@ -15,7 +15,7 @@ const Store = (() => {
     bal: 1000, realBal: 0, rounds: 0, wins: 0, trusts: 0, stake: 25,
     myC: null, theirC: null, hist: [], txns: [],
     pnl: 0, waged: 0, rake: 0, rid: 1,
-    name: 'Player', global: 12483, wt: null,
+    name: 'Player', avatar: '0', global: 12483, wt: null,
     lastOpp: null, lastOppReal: false, mode: 'demo',
     uid: null, _challenger: null,
   };
