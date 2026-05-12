@@ -74,18 +74,6 @@ function safeSwitchTab(tab) {
   _origSwitchTab(tab);
 }
 
-// ── DEMO GUARD ───────────────────────────────────────────────
-const _origSwitchTab = switchTab;
-function safeSwitchTab(tab) {
-  if (G.mode === 'demo') {
-    G.mode = 'real';
-    G.bal  = G.realBal || 0;
-    G.hist = []; G.txns = []; G.pnl = 0;
-    updateAll();
-  }
-  _origSwitchTab(tab);
-}
-
 const _origGoS = goS;
 function safeGoS(id) {
   if (id === 'S-home' && G.mode === 'demo') {
