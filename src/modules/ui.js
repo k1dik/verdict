@@ -22,7 +22,7 @@ export function updateAll() {
   const bf  = fmt(G.bal);
 
   ['hm-bal','mb-bal','wd-bal','nr-bal'].forEach(id => { const e = $(id); if (e) e.textContent = bf; });
-  set('pf-b',    el => el.textContent = Math.round(G.bal));
+  set('pf-b',    el => el.textContent = G.bal.toFixed(2));
   set('hm-rnd',  el => el.textContent = G.rounds);
   set('hm-wins', el => el.textContent = G.wins + ' wins');
   set('hm-tr',   el => { el.textContent = trS; el.style.color = tc; });
@@ -77,7 +77,7 @@ export function renderHomeRounds() {
 Store.subscribe('bal', val => {
   const bf = val.toFixed(2);
   ['hm-bal','mb-bal','wd-bal','nr-bal'].forEach(id => { const e = $(id); if (e) e.textContent = bf; });
-  set('pf-b', el => el.textContent = Math.round(val));
+  set('pf-b', el => el.textContent = parseFloat(val).toFixed(2));
 });
 
 Store.subscribe('global', val => {
