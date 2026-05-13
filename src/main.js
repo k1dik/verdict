@@ -10,7 +10,7 @@
  * shrinks to just imports + boot — no more window.* needed.
  */
 
-import { supabase, signUp, signIn, saveBalance, getCurrentUser } from './supabase.js';
+import { supabase, signUp, signIn, saveBalance, getCurrentUser, saveRound, loadRounds } from './supabase.js';
 import { Store, G }                           from './store/store.js';
 import { resolveRound, stats }                from './modules/game.engine.js';
 import { MM, renderOppRep, renderRealPlayerRep } from './modules/matchmaking.js';
@@ -53,9 +53,18 @@ getCurrentUser().then(result => {
     G.uid     = result.user.id;
     G.name    = result.player.name || 'Player';
     G.bal     = result.player.bal  || 100;
-    G.realBal = result.player.bal  || 100;  // сохраняем реальный баланс
+    G.realBal = result.player.bal  || 100;
     G.rounds  = result.player.rounds || 0;
     G.wins    = result.player.wins   || 0;
+    // Загружаем историю раундов из Supabase
+    loadRounds(result.user.id).then(rounds => {
+      if (rounds.length) {
+        G.hist = rounds.map(r => ({
+          title: r.title, t: r.outcome, my: r.my_choice,
+          them: r.their_choice, stake: r.stake, d: r.delta, rake: r.rake
+        }));
+      }
+    });
     enterApp();
   }
 });
@@ -192,7 +201,11 @@ function makeChoice(c) {
     lbUpsert();
     // Сохраняем баланс в Supabase после каждого раунда
     // Сохраняем только в real и training режимах — не в demo
-    if (G.userId && G.mode !== 'demo') saveBalance(G.userId, G.bal, G.rounds, G.wins, G.pnl, G.name).catch(e => console.error('save error:', e));
+    if (G.userId && G.mode !== 'demo') {
+      saveBalance(G.userId, G.bal, G.rounds, G.wins, G.pnl, G.name).catch(e => console.error('save error:', e));
+      const lastRound = G.hist[0];
+      if (lastRound) saveRound(G.userId, lastRound).catch(e => console.error('round save error:', e));
+    }
   });
 }
 

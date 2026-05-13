@@ -49,6 +49,31 @@ export async function saveBalance(userId, bal, rounds, wins, pnl, name) {
   }
 }
 
+// Сохранить раунд в историю
+export async function saveRound(userId, round) {
+  await supabase.from('round_history').insert({
+    player_id:   userId,
+    title:       round.title,
+    outcome:     round.t,
+    my_choice:   round.my,
+    their_choice: round.them,
+    stake:       round.stake,
+    delta:       round.d,
+    rake:        round.rake || 0,
+  })
+}
+
+// Загрузить историю раундов
+export async function loadRounds(userId) {
+  const { data } = await supabase
+    .from('round_history')
+    .select('*')
+    .eq('player_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(20)
+  return data || []
+}
+
 // Текущий юзер — восстанавливает сессию при перезагрузке
 export async function getCurrentUser() {
   const { data } = await supabase.auth.getSession()
