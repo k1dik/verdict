@@ -74,6 +74,16 @@ export async function loadRounds(userId) {
   return data || []
 }
 
+// Загрузить профиль соперника по userId
+export async function loadOpponentProfile(userId) {
+  const { data } = await supabase
+    .from('players')
+    .select('id, name, bal, rounds, wins')
+    .eq('id', userId)
+    .single()
+  return data || null
+}
+
 // Текущий юзер — восстанавливает сессию при перезагрузке
 export async function getCurrentUser() {
   const { data } = await supabase.auth.getSession()

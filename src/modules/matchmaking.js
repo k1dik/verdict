@@ -10,7 +10,7 @@
 
 import { G }                             from '../store/store.js';
 import { PLAYER_POOL, STRATEGY_META, trainingAiChoice } from './game.config.js';
-import { supabase }                      from '../supabase.js';
+import { supabase, loadOpponentProfile } from '../supabase.js';
 
 const $ = id => document.getElementById(id);
 const fmt = n => n.toFixed(2);
@@ -219,27 +219,52 @@ function trySupabaseRealtime(stake) {
       stopFeed(); stopDots();
       realtimeChannel.send({
         type: 'broadcast', event: 'match',
-        payload: { to: payload.roomId, from: myRoomId, name: G.name, rounds: G.rounds, trust: G.rounds ? Math.round((G.trusts / G.rounds) * 100) : 50 }
+        payload: { to: payload.roomId, from: myRoomId, userId: G.userId, name: G.name, rounds: G.rounds, trust: G.rounds ? Math.round((G.trusts / G.rounds) * 100) : 50 }
       });
-      showMatchedPhase({
+      const oppBase = {
         name:    payload.name   || ('anon_' + payload.roomId.slice(0, 6)),
         rounds:  payload.rounds || 0,
         trust:   payload.trust  || 50,
         real:    true,
         _roomId: payload.roomId,
-      });
+      };
+      showMatchedPhase(oppBase);
+      // Загружаем реальный профиль соперника если есть userId
+      if (payload.userId) {
+        loadOpponentProfile(payload.userId).then(profile => {
+          if (profile && currentOpponent) {
+            const tr = profile.rounds ? Math.round((profile.wins / profile.rounds) * 100) : 50;
+            currentOpponent.rounds = profile.rounds;
+            currentOpponent.trust  = tr;
+            currentOpponent.wins   = profile.wins;
+            renderRealPlayerRep(currentOpponent);
+          }
+        });
+      }
     })
     .on('broadcast', { event: 'match' }, ({ payload }) => {
       if (matched || payload.to !== myRoomId) return;
       matched = true;
       stopFeed(); stopDots();
-      showMatchedPhase({
+      const oppBase2 = {
         name:    payload.name   || ('anon_' + payload.from.slice(0, 6)),
         rounds:  payload.rounds || 0,
         trust:   payload.trust  || 50,
         real:    true,
         _roomId: payload.from,
-      });
+      };
+      showMatchedPhase(oppBase2);
+      if (payload.userId) {
+        loadOpponentProfile(payload.userId).then(profile => {
+          if (profile && currentOpponent) {
+            const tr = profile.rounds ? Math.round((profile.wins / profile.rounds) * 100) : 50;
+            currentOpponent.rounds = profile.rounds;
+            currentOpponent.trust  = tr;
+            currentOpponent.wins   = profile.wins;
+            renderRealPlayerRep(currentOpponent);
+          }
+        });
+      }
     })
     .on('broadcast', { event: 'choice' }, ({ payload }) => {
       if (payload.to !== myRoomId) return;
@@ -255,7 +280,7 @@ function trySupabaseRealtime(stake) {
       if (status === 'SUBSCRIBED') {
         realtimeChannel.send({
           type: 'broadcast', event: 'seeking',
-          payload: { roomId: myRoomId, name: G.name, rounds: G.rounds, trust: G.rounds ? Math.round((G.trusts / G.rounds) * 100) : 50, stake }
+          payload: { roomId: myRoomId, userId: G.userId, name: G.name, rounds: G.rounds, trust: G.rounds ? Math.round((G.trusts / G.rounds) * 100) : 50, stake }
         });
       }
     });
