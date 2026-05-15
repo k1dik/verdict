@@ -161,14 +161,38 @@ function _refreshReferral() {
 }
 
 export function copyRefLink() {
-  const user = G.user;
-  const code = user?.id?.slice(0, 8) ?? 'guest';
-  const link = `https://verdict.game?ref=${code}`;
+  const code = G.userId?.slice(0, 8) ?? G.uid?.slice(0, 8) ?? 'guest';
+  const base  = window.location.origin;
+  const link  = `${base}?ref=${code}`;
+
+  // Обновляем отображение ссылки
+  const linkEl = document.getElementById('ref-link-text');
+  if (linkEl) linkEl.textContent = link;
+
   navigator.clipboard.writeText(link).then(() => {
     const btn = document.querySelector('#S-referral button');
     if (!btn) return;
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy link', 2000);
+    btn.textContent = '✓ Copied!';
+    btn.style.background = 'var(--g)';
+    setTimeout(() => {
+      btn.textContent = 'Copy link';
+      btn.style.background = 'var(--r)';
+    }, 2000);
+  }).catch(() => {
+    // Fallback для браузеров без clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = link;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
   });
+}
+
+export function updateRefLink() {
+  const code   = G.userId?.slice(0, 8) ?? G.uid?.slice(0, 8) ?? '—';
+  const base   = window.location.origin;
+  const linkEl = document.getElementById('ref-link-text');
+  if (linkEl) linkEl.textContent = code === '—' ? 'Sign in to get your link' : `${base}?ref=${code}`;
 }
 function set(id, fn) { const el = $(id); if (el) fn(el); }

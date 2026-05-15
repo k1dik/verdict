@@ -15,7 +15,7 @@ import { Store, G }                           from './store/store.js';
 import { resolveRound, stats }                from './modules/game.engine.js';
 import { MM, renderOppRep, renderRealPlayerRep } from './modules/matchmaking.js';
 import { updateAll, renderHomeRounds }        from './modules/ui.js';
-import { goS, switchTab, openSh, closeAll, openM, closeM, refreshM, copyRefLink } from './modules/nav.js';
+import { goS, switchTab, openSh, closeAll, openM, closeM, refreshM, copyRefLink, updateRefLink } from './modules/nav.js';
 import { lbUpsert, lbSetTab, renderLeaderboard } from './screens/leaderboard.js';
 import {
   addFundsInternal,
@@ -47,6 +47,10 @@ setInterval(() => { if (Math.random() > 0.5) G.global += Math.floor(Math.random(
 checkIncomingChallenge();
 
 // Восстанавливаем сессию если уже был залогинен
+// Сохраняем реферальный код если есть в URL
+const _refParam = new URLSearchParams(window.location.search).get('ref');
+if (_refParam) localStorage.setItem('verdict_ref', _refParam);
+
 getCurrentUser().then(result => {
   if (result?.user && result?.player) {
     G.userId  = result.user.id;
@@ -421,6 +425,8 @@ function goSplash() {
 }
 
 function enterApp() {
+  // Обновляем реферальную ссылку
+  setTimeout(updateRefLink, 200);
   // Загружаем сохранённую аватарку
   const savedAvatar = localStorage.getItem('verdict_avatar');
   if (savedAvatar) { G.avatar = savedAvatar; setTimeout(() => renderAvatar(savedAvatar), 100); }
@@ -531,7 +537,7 @@ function joinWaitlist() { alert('You\'re on the waitlist!'); }
 Object.assign(window, {
   G, Store, MM,
   // nav
-  goS: safeGoS, openSh, closeAll, openM, closeM, refreshM, copyRefLink,
+  goS: safeGoS, openSh, closeAll, openM, closeM, refreshM, copyRefLink, updateRefLink,
   switchTab: safeSwitchTab,
   // game
   pickC, startRound, makeChoice, playAgain,
