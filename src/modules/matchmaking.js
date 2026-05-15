@@ -13,6 +13,25 @@ import { PLAYER_POOL, STRATEGY_META, trainingAiChoice } from './game.config.js';
 import { supabase, loadOpponentProfile } from '../supabase.js';
 
 const $ = id => document.getElementById(id);
+
+// ── PUSH NOTIFICATIONS ───────────────────────────────────────
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+}
+
+function notifyMatchFound(oppName) {
+  if (Notification.permission !== 'granted') return;
+  // Если приложение в фокусе — не показываем уведомление
+  if (document.visibilityState === 'visible') return;
+  new Notification('Match found! ⚡', {
+    body: `${oppName} is ready to play. Make your decision!`,
+    icon: '/icon.svg',
+    tag:  'verdict-match',
+  });
+}
 const fmt = n => n.toFixed(2);
 
 // ── REPUTATION RENDERING ────────────────────────────────────
@@ -193,6 +212,7 @@ function showMatchedPhase(opponent) {
   if (lockArea) lockArea.style.display = 'none';
   opponent.real ? renderRealPlayerRep(opponent) : renderOppRep(opponent);
   if (typeof window.startDecisionTimer === 'function') window.startDecisionTimer();
+  notifyMatchFound(opponent.name);
 }
 
 function cleanupRealtime() {
@@ -309,6 +329,7 @@ export const MM = {
     startDots('wt-dots');
     startFeed(stake);
     updateOnlineCount();
+    requestNotificationPermission();
 
     // Training режим — мгновенно показываем ИИ противника
     if (G.mode === 'training') {

@@ -20,6 +20,30 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+self.addEventListener('push', e => {
+  const data = e.data?.json() || {};
+  e.waitUntil(
+    self.registration.showNotification(data.title || 'Verdict', {
+      body:  data.body  || 'You have a new match!',
+      icon:  '/icon.svg',
+      badge: '/icon.svg',
+      tag:   'verdict-match',
+      renotify: true,
+      data:  data,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window' }).then(list => {
+      if (list.length) return list[0].focus();
+      return clients.openWindow('/');
+    })
+  );
+});
+
 self.addEventListener('fetch', e => {
   // Только GET запросы, не Supabase
   if (e.request.method !== 'GET') return;
